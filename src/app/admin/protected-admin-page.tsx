@@ -4,7 +4,7 @@
 import { getAdminPageData } from '@/lib/data';
 import { DealsTable } from '@/components/admin/deals-table';
 import { AddDealDialog } from '@/components/admin/add-deal-dialog';
-import { Suspense, useEffect, useState } from 'react';
+import { Suspense, useEffect, useState, useRef } from 'react';
 import { useAuth } from '@/hooks/use-auth';
 import { type Deal } from '@/lib/types';
 import { AlertTriangle } from 'lucide-react';
@@ -18,21 +18,24 @@ export default function ProtectedAdminPage() {
   const [categories, setCategories] = useState<string[]>([]);
   const [dataLoading, setDataLoading] = useState(true);
   const [isAuthorized, setIsAuthorized] = useState<boolean | null>(null);
+  const hasFetchedData = useRef(false);
 
   useEffect(() => {
     if (loading) {
-      return; 
+      return;
     }
-
+    
     const authorized = user?.email === ADMIN_EMAIL;
     setIsAuthorized(authorized);
 
-    if (authorized) {
+    if (authorized && !hasFetchedData.current) {
+      hasFetchedData.current = true;
       setDataLoading(true);
       getAdminPageData()
         .then(({ deals, categories }) => {
           setDeals(deals);
-          setCategories(categories);
+          // Use a Set to ensure categories are unique before setting state
+          setCategories(Array.from(new Set(categories)));
         })
         .catch(error => {
           console.error("Failed to load admin data", error);
@@ -40,7 +43,7 @@ export default function ProtectedAdminPage() {
         .finally(() => {
           setDataLoading(false);
         });
-    } else {
+    } else if(!authorized) {
       setDataLoading(false);
     }
   }, [user, loading]);
@@ -101,3 +104,4 @@ export default function ProtectedAdminPage() {
     </div>
   );
 }
+

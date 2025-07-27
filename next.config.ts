@@ -18,6 +18,7 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  serverComponentsExternalPackages: ['@swc/helpers'],
 };
 
 export default nextConfig;

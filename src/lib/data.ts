@@ -12,6 +12,7 @@ import {
   orderBy,
   Timestamp,
   documentId,
+  writeBatch,
 } from 'firebase/firestore';
 import { subDays } from 'date-fns';
 
@@ -69,11 +70,13 @@ export async function getAllDealsForAdmin(): Promise<Deal[]> {
 export async function getCategories(): Promise<string[]> {
   const querySnapshot = await getDocs(query(categoriesCollection, orderBy('name')));
   if (querySnapshot.empty) {
-    // Seed initial categories if none exist
     const initialCategories = ["Mobile", "Electronics", "TV", "Fashion", "Appliances", "Books"];
-    for (const cat of initialCategories) {
-      await addDoc(categoriesCollection, { name: cat });
-    }
+    const batch = writeBatch(db);
+    initialCategories.forEach(cat => {
+      const docRef = doc(categoriesCollection);
+      batch.set(docRef, { name: cat });
+    });
+    await batch.commit();
     return initialCategories.sort();
   }
   return querySnapshot.docs.map(doc => doc.data().name as string);
@@ -82,11 +85,9 @@ export async function getCategories(): Promise<string[]> {
 export async function addCategoryToDb(categoryName: string): Promise<string> {
   const trimmedName = categoryName.trim();
   
-  const q = query(categoriesCollection, where('name', '==', trimmedName));
-  const existing = await getDocs(q);
-  
-  if (!existing.empty) {
-    throw new Error(`Category "${trimmedName}" already exists.`);
+  const allCategories = await getCategories();
+  if (allCategories.some(cat => cat.toLowerCase() === trimmedName.toLowerCase())) {
+     throw new Error(`Category "${trimmedName}" already exists.`);
   }
 
   await addDoc(categoriesCollection, { name: trimmedName });

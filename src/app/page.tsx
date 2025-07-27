@@ -1,3 +1,4 @@
+
 import { getDeals, getCategories } from '@/lib/data';
 import TopDealBanner from '@/components/top-deal-banner';
 import DealFilters from '@/components/deal-filters';
@@ -18,7 +19,9 @@ export default async function Home({ searchParams }: HomeProps) {
   const deals = await getDeals({ query, category });
   const categories = await getCategories();
   
-  const hotDeal = deals.find(deal => deal.isHotDeal) || deals[0];
+  const hotDeal = deals.length > 0 
+    ? deals.find(deal => deal.isHotDeal) || deals[0]
+    : null;
 
   return (
     <div className="container mx-auto px-4 py-8">

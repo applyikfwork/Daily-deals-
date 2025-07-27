@@ -39,7 +39,7 @@ async function DealsHistorySection({ query, category }: { query: string; categor
           <AlertTriangle className="h-4 w-4" />
           <AlertTitle>Error Fetching Deals</AlertTitle>
           <AlertDescription>
-            There was a problem fetching data from the database. This is likely due to Firestore security rules. Please ensure your rules allow public read access.
+            There was a problem fetching data from the database. This could be due to network issues or incorrect Firestore security rules.
           </AlertDescription>
         </Alert>
       </div>

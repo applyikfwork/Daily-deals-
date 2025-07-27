@@ -21,6 +21,7 @@ async function DealsSection({ query, category }: { query: string; category: stri
   let error: string | null = null;
 
   try {
+    // Fetch deals and categories in parallel.
     const [fetchedDeals, fetchedCategories] = await Promise.all([
       getDeals({ query, category, timeScope: 'today' }),
       getCategories(),
@@ -39,7 +40,7 @@ async function DealsSection({ query, category }: { query: string; category: stri
           <AlertTriangle className="h-4 w-4" />
           <AlertTitle>Error Fetching Deals</AlertTitle>
           <AlertDescription>
-            There was a problem fetching data from the database. This is likely due to Firestore security rules. Please ensure your rules allow public read access.
+            There was a problem fetching data from the database. This could be due to network issues or incorrect Firestore security rules.
           </AlertDescription>
         </Alert>
       </div>

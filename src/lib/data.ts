@@ -22,12 +22,7 @@ const dealsCollection = collection(db, 'deals');
 const categoriesCollection = collection(db, 'categories');
 const settingsCollection = collection(db, 'settings');
 
-let hasSeeded = false;
-
 async function seedInitialData() {
-    if (hasSeeded) return;
-    hasSeeded = true; 
-
     try {
         const categoriesSnapshot = await getDocs(query(categoriesCollection, where('name', '==', 'Electronics')));
         if (categoriesSnapshot.empty) {
@@ -100,6 +95,7 @@ async function seedInitialData() {
         }
     } catch (e) {
         console.warn("Could not seed initial data. This might be due to Firestore security rules.", e);
+        // This is not a critical error for the app's functionality, so we don't re-throw.
     }
 }
 
@@ -165,7 +161,6 @@ export async function getAdminPageData(): Promise<{ deals: Deal[], categories: s
 }
 
 export async function getCategories(): Promise<string[]> {
-  await seedInitialData();
   const categoriesQuery = query(categoriesCollection, orderBy('name'));
   const querySnapshot = await getDocs(categoriesQuery);
   const categories = querySnapshot.docs.map(doc => doc.data().name as string);
@@ -224,11 +219,15 @@ export async function deleteDealFromDb(id: string): Promise<{ success: boolean }
 }
 
 export async function getFooterSettings(): Promise<FooterSettings> {
-    await seedInitialData();
     const footerSettingsDoc = doc(settingsCollection, 'footer');
-    let footerSnapshot = await getDoc(footerSettingsDoc);
+    let footerSnapshot;
+    try {
+        footerSnapshot = await getDoc(footerSettingsDoc);
+    } catch(e) {
+        console.error("Failed to fetch footer settings, using defaults.", e);
+    }
 
-     if (!footerSnapshot.exists()) {
+     if (!footerSnapshot?.exists()) {
         return {
             privacyPolicyUrl: "#",
             termsOfServiceUrl: "#",

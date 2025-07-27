@@ -9,7 +9,7 @@ export const metadata: Metadata = {
   title: 'Deal Finder',
   description: 'Find the best deals on the web.',
   icons: {
-    icon: '/favicon.ico',
+    icon: '/icon.svg',
   },
 };
 

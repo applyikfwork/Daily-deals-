@@ -1,3 +1,4 @@
+
 'use client';
 
 import * as React from 'react';
@@ -22,6 +23,13 @@ import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/hooks/use-toast';
 import { addDealAction, categorizeDealAction } from '@/lib/actions';
 import { Wand2 } from 'lucide-react';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 
 const dealSchema = z.object({
   title: z.string().min(10, 'Title must be at least 10 characters long.'),
@@ -186,22 +194,38 @@ export function DealForm({ categories, onFormSubmit }: DealFormProps) {
               )}
             />
         </div>
+        <FormField
+          control={form.control}
+          name="category"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Category</FormLabel>
+               <div className="flex gap-2 items-center">
+                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select a category" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {categories.map((cat) => (
+                        <SelectItem key={cat} value={cat}>
+                          {cat}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                <Button type="button" variant="outline" size="icon" onClick={handleCategorize} disabled={isCategorizing}>
+                  <Wand2 className="h-4 w-4" />
+                  <span className="sr-only">Categorize with AI</span>
+                </Button>
+              </div>
+              <FormDescription>Select a category or use the AI to suggest one.</FormDescription>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
 
-        <FormItem>
-          <FormLabel>Category</FormLabel>
-          <div className="flex gap-2 items-center">
-            <FormControl>
-                <Input placeholder="e.g., Mobile" {...form.register('category')} />
-            </FormControl>
-            <Button type="button" variant="outline" size="icon" onClick={handleCategorize} disabled={isCategorizing}>
-              <Wand2 className="h-4 w-4" />
-              <span className="sr-only">Categorize with AI</span>
-            </Button>
-          </div>
-          <FormDescription>Enter a category or use the AI to suggest one based on title/description.</FormDescription>
-          <FormMessage {...form.getFieldState('category')} />
-        </FormItem>
-        
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <FormField
               control={form.control}

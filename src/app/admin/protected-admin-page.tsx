@@ -1,3 +1,4 @@
+
 'use client';
 
 import { getAllDealsForAdmin, getCategories } from '@/lib/data';
@@ -7,6 +8,7 @@ import { Suspense, useEffect, useState } from 'react';
 import { useAuth } from '@/hooks/use-auth';
 import { type Deal } from '@/lib/types';
 import { AlertTriangle } from 'lucide-react';
+import { CategoryManager } from '@/components/admin/category-manager';
 
 const ADMIN_EMAIL = 'xyzadminserviceacc@gmail.com';
 
@@ -67,15 +69,26 @@ export default function ProtectedAdminPage() {
     <div className="container mx-auto px-4 py-8">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold">Admin Panel</h1>
-        <AddDealDialog categories={categories} />
       </div>
       <p className="mb-6 text-muted-foreground">
-        Welcome, {user.email}. Manage your deals here. Add, edit, or delete deals as needed.
+        Welcome, {user.email}. Manage your deals and categories here.
       </p>
 
-      <Suspense fallback={<DealsTable.Skeleton />}>
-        <DealsTable data={deals} />
-      </Suspense>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="lg:col-span-2">
+          <div className="flex justify-between items-center mb-4">
+             <h2 className="text-2xl font-bold">Deals Management</h2>
+             <AddDealDialog categories={categories} />
+          </div>
+          <Suspense fallback={<DealsTable.Skeleton />}>
+            <DealsTable data={deals} />
+          </Suspense>
+        </div>
+        <div>
+           <h2 className="text-2xl font-bold mb-4">Category Management</h2>
+           <CategoryManager initialCategories={categories} />
+        </div>
+      </div>
     </div>
   );
 }

@@ -1,8 +1,9 @@
+
 'use server';
 
 import { revalidatePath } from 'next/cache';
 import * as z from 'zod';
-import { addDealToDb, deleteDealFromDb } from './data';
+import { addDealToDb, deleteDealFromDb, addCategoryToDb } from './data';
 import { categorizeDeal } from '@/ai/flows/categorize-deal';
 
 // Schema for adding a deal from the form
@@ -86,4 +87,25 @@ export async function categorizeDealAction(data: unknown): Promise<CategorizeAct
     console.error('AI categorization failed:', error);
     return { success: false, error: 'Failed to get category from AI.' };
   }
+}
+
+const addCategorySchema = z.object({
+  name: z.string().min(2, 'Category name must be at least 2 characters.'),
+});
+
+export async function addCategoryAction(data: unknown): Promise<ActionResponse> {
+    const validationResult = addCategorySchema.safeParse(data);
+    if (!validationResult.success) {
+        return { success: false, error: 'Invalid category name provided.' };
+    }
+
+    try {
+        await addCategoryToDb(validationResult.data.name);
+        revalidatePath('/admin');
+        return { success: true };
+    } catch (error) {
+        console.error('Failed to add category:', error);
+        const errorMessage = error instanceof Error ? error.message : 'Could not add the category.';
+        return { success: false, error: errorMessage };
+    }
 }

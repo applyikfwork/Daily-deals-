@@ -1,3 +1,4 @@
+
 import type { Deal } from '@/lib/types';
 import { subDays, addDays } from 'date-fns';
 
@@ -84,6 +85,8 @@ let deals: Deal[] = [
   },
 ];
 
+let categories = Array.from(new Set(deals.map(d => d.category)));
+
 // Simulate API latency
 const delay = (ms: number) => new Promise(res => setTimeout(res, ms));
 
@@ -122,8 +125,17 @@ export async function getAllDealsForAdmin(): Promise<Deal[]> {
 
 export async function getCategories(): Promise<string[]> {
   await delay(100);
-  const categories = new Set(deals.map(d => d.category));
-  return Array.from(categories);
+  return [...categories].sort();
+}
+
+export async function addCategoryToDb(categoryName: string): Promise<string> {
+  await delay(300);
+  const trimmedName = categoryName.trim();
+  if (categories.find(c => c.toLowerCase() === trimmedName.toLowerCase())) {
+    throw new Error(`Category "${trimmedName}" already exists.`);
+  }
+  categories.push(trimmedName);
+  return trimmedName;
 }
 
 export async function addDealToDb(dealData: Omit<Deal, 'id' | 'createdAt'>): Promise<Deal> {
@@ -134,6 +146,9 @@ export async function addDealToDb(dealData: Omit<Deal, 'id' | 'createdAt'>): Pro
     createdAt: new Date().toISOString(),
   };
   deals.unshift(newDeal); // Add to the beginning of the array
+  if (!categories.includes(newDeal.category)) {
+      categories.push(newDeal.category);
+  }
   return newDeal;
 }
 

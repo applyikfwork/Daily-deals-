@@ -202,7 +202,6 @@ export async function deleteDealFromDb(id: string): Promise<{ success: boolean }
 }
 
 export async function getFooterSettings(): Promise<FooterSettings> {
-    const footerSettingsDoc = doc(settingsCollection, 'footer');
     const defaultSettings = {
         privacyPolicyUrl: "#",
         termsOfServiceUrl: "#",
@@ -213,10 +212,11 @@ export async function getFooterSettings(): Promise<FooterSettings> {
     };
 
     try {
+        const footerSettingsDoc = doc(settingsCollection, 'footer');
         const footerSnapshot = await getDoc(footerSettingsDoc);
         if (!footerSnapshot.exists()) {
-            // If the document doesn't exist, seed it for future use but return defaults for now.
-             await setDoc(footerSettingsDoc, defaultSettings);
+            console.log("Footer settings not found, returning default. This may be due to Firestore rules.");
+            // No need to seed here, just return defaults.
             return defaultSettings;
         }
         return footerSnapshot.data() as FooterSettings;

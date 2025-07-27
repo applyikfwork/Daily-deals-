@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useTransition } from 'react';
+import { useState, useTransition, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -29,6 +29,11 @@ export function CategoryManager({ initialCategories }: CategoryManagerProps) {
   const { toast } = useToast();
   const [isPending, startTransition] = useTransition();
   const [categories, setCategories] = useState(initialCategories);
+
+  useEffect(() => {
+    // Keep local state in sync with initial props
+    setCategories(initialCategories);
+  }, [initialCategories]);
 
   const form = useForm<CategoryFormValues>({
     resolver: zodResolver(categorySchema),

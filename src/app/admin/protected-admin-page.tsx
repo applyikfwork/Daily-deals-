@@ -17,12 +17,18 @@ export default function ProtectedAdminPage() {
   const [deals, setDeals] = useState<Deal[]>([]);
   const [categories, setCategories] = useState<string[]>([]);
   const [dataLoading, setDataLoading] = useState(true);
-
-  const isAuthorized = user?.email === ADMIN_EMAIL;
+  const [isAuthorized, setIsAuthorized] = useState<boolean | null>(null);
 
   useEffect(() => {
+    if (loading) {
+      return; // Wait until authentication status is resolved
+    }
+
+    const authorized = user?.email === ADMIN_EMAIL;
+    setIsAuthorized(authorized);
+
     async function loadAdminData() {
-      if (isAuthorized) {
+      if (authorized) {
         try {
           const { deals, categories } = await getAdminPageData();
           setDeals(deals);
@@ -36,17 +42,15 @@ export default function ProtectedAdminPage() {
         setDataLoading(false);
       }
     }
+    
+    loadAdminData();
+  }, [user, loading]);
 
-    if (!loading) {
-      loadAdminData();
-    }
-  }, [user, loading, isAuthorized]);
-
-  if (loading || dataLoading) {
+  if (loading || isAuthorized === null) {
     return (
       <div className="container mx-auto px-4 py-8">
         <h1 className="text-3xl font-bold">Loading Admin Panel...</h1>
-        <p>Please wait while we fetch your data.</p>
+        <p>Please wait while we verify your credentials.</p>
       </div>
     );
   }
@@ -63,8 +67,8 @@ export default function ProtectedAdminPage() {
     );
   }
   
-  if (!deals || !categories) {
-    return (
+  if (dataLoading) {
+     return (
         <div className="container mx-auto px-4 py-8">
             <h1 className="text-3xl font-bold">Loading data...</h1>
         </div>
@@ -77,7 +81,7 @@ export default function ProtectedAdminPage() {
         <h1 className="text-3xl font-bold">Admin Panel</h1>
       </div>
       <p className="mb-6 text-muted-foreground">
-        Welcome, {user.email}. Manage your deals and categories here.
+        Welcome, {user?.email}. Manage your deals and categories here.
       </p>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">

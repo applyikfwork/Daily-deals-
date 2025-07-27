@@ -72,19 +72,48 @@ export async function getAdminPageData(): Promise<{ deals: Deal[], categories: s
     } as Deal));
     
     if (dealsSnapshot.empty && categories.length > 0) {
-        const demoDeal = {
-            title: "Demo Product: Smart Home Hub",
-            description: "A central hub to connect and control all your smart home devices. Supports voice commands and is compatible with major brands.",
-            price: 4999,
-            originalPrice: 7999,
-            imageUrl: "https://placehold.co/600x400.png",
-            link: "https://example.com/deal/smart-hub",
-            category: "Electronics",
-            expireAt: addDays(new Date(), 7).toISOString(),
-            isHotDeal: true,
-        };
-        const newDeal = await addDealToDb(demoDeal);
-        deals.push(newDeal);
+        const demoDeals = [
+            {
+                title: "Demo: Smart Home Hub",
+                description: "A central hub to connect and control all your smart home devices. Supports voice commands and is compatible with major brands.",
+                price: 4999,
+                originalPrice: 7999,
+                imageUrl: "https://placehold.co/600x400.png",
+                link: "https://example.com/deal/smart-hub",
+                category: "Electronics",
+                expireAt: addDays(new Date(), 7).toISOString(),
+                isHotDeal: true,
+            },
+            {
+                title: "Demo: Wireless Bluetooth Earbuds",
+                description: "High-fidelity sound with noise cancellation. Up to 24 hours of battery life with the charging case. Perfect for workouts and calls.",
+                price: 2499,
+                originalPrice: 4999,
+                imageUrl: "https://placehold.co/600x400.png",
+                link: "https://example.com/deal/earbuds",
+                category: "Mobile",
+                expireAt: addDays(new Date(), 10).toISOString(),
+                isHotDeal: false,
+            },
+            {
+                title: "Demo: Classic Leather Watch",
+                description: "A timeless analog watch with a genuine leather strap and stainless steel case. Water-resistant up to 50m.",
+                price: 7999,
+                originalPrice: 12999,
+                imageUrl: "https://placehold.co/600x400.png",
+                link: "https://example.com/deal/watch",
+                category: "Fashion",
+                expireAt: addDays(new Date(), 5).toISOString(),
+                isHotDeal: false,
+            }
+        ];
+        
+        const newDeals: Deal[] = [];
+        for (const deal of demoDeals) {
+            const newDeal = await addDealToDb(deal);
+            newDeals.push(newDeal);
+        }
+        deals.push(...newDeals);
     }
 
     return { deals, categories };

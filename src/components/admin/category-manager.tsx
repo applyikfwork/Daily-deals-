@@ -40,7 +40,14 @@ export function CategoryManager({ initialCategories }: CategoryManagerProps) {
       const result = await addCategoryAction(data);
       if (result.success) {
         toast({ title: 'Success!', description: 'New category has been added.' });
-        setCategories(prev => [...prev, data.name].sort());
+        // Prevent adding duplicates to the local state
+        setCategories(prev => {
+          const newCategory = data.name.trim();
+          if (prev.includes(newCategory)) {
+            return prev;
+          }
+          return [...prev, newCategory].sort()
+        });
         form.reset();
       } else {
         toast({

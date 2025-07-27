@@ -9,7 +9,7 @@ const firebaseConfig = {
     apiKey: "AIzaSyA6YC6PQL4fetD-iIPvlSI8eeV_ugoX4k0",
     authDomain: "deal-finder-nqltx.firebaseapp.com",
     projectId: "deal-finder-nqltx",
-    storageBucket: "deal-finder-nqltx.appspot.com",
+    storageBucket: "deal-finder-nqltx.firebasestorage.app",
     messagingSenderId: "993747337148",
     appId: "1:993747337148:web:bf673db84249d6055df5b9"
 };

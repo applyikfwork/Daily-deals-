@@ -37,7 +37,7 @@ export default function Header() {
             ) : (
                 <Button variant="ghost" onClick={signIn}>
                     <LogIn className="mr-2 h-4 w-4" />
-                    Admin Login
+                    Sign In
                 </Button>
             )}
           </nav>

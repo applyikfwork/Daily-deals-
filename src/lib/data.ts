@@ -13,6 +13,7 @@ import {
   Timestamp,
   documentId,
   writeBatch,
+  runTransaction,
 } from 'firebase/firestore';
 import { subDays } from 'date-fns';
 
@@ -105,16 +106,23 @@ export async function getCategories(): Promise<string[]> {
 export async function addCategoryToDb(categoryName: string): Promise<string> {
   const trimmedName = categoryName.trim();
   
-  const q = query(categoriesCollection, where('name', '==', trimmedName));
-  const existing = await getDocs(q);
+  return await runTransaction(db, async (transaction) => {
+    const categoriesRef = collection(db, 'categories');
+    const q = query(categoriesRef, where("name", "==", trimmedName));
+    
+    const snapshot = await getDocs(q);
 
-  if (!existing.empty) {
-     throw new Error(`Category "${trimmedName}" already exists.`);
-  }
+    if (!snapshot.empty) {
+      throw new Error(`Category "${trimmedName}" already exists.`);
+    }
 
-  await addDoc(categoriesCollection, { name: trimmedName });
-  return trimmedName;
+    const newCategoryRef = doc(categoriesRef);
+    transaction.set(newCategoryRef, { name: trimmedName });
+
+    return trimmedName;
+  });
 }
+
 
 export async function addDealToDb(dealData: Omit<Deal, 'id' | 'createdAt'>): Promise<Deal> {
   const newDealData = {

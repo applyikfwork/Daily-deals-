@@ -98,22 +98,22 @@ async function seedInitialData() {
     }
 }
 
-seedInitialData();
+// No longer call seedInitialData() automatically
+// seedInitialData();
 
 
 export async function getDeals(filters: { query?: string, category?: string, timeScope?: 'today' | 'history' | 'all' } = {}): Promise<Deal[]> {
-  const now = new Date();
-  const todayStart = startOfToday();
-  const fifteenDaysAgo = startOfDay(subDays(now, 15));
-
-  let q = query(dealsCollection, orderBy('createdAt', 'desc'));
-
-  if (filters.category && filters.category !== 'all') {
-    q = query(q, where('category', '==', filters.category));
-  }
-  
-  let deals: Deal[] = [];
   try {
+    const now = new Date();
+    const todayStart = startOfToday();
+    const fifteenDaysAgo = startOfDay(subDays(now, 15));
+
+    let q = query(dealsCollection, orderBy('createdAt', 'desc'));
+
+    if (filters.category && filters.category !== 'all') {
+      q = query(q, where('category', '==', filters.category));
+    }
+    
     const querySnapshot = await getDocs(q);
 
     let allDeals: Deal[] = querySnapshot.docs.map(doc => ({
@@ -126,30 +126,32 @@ export async function getDeals(filters: { query?: string, category?: string, tim
     // Filter by date range first
     let dealsInDateRange = allDeals.filter(deal => new Date(deal.createdAt) >= fifteenDaysAgo);
   
+    let deals: Deal[];
     // Apply time scope filtering
-    deals = dealsInDateRange;
     if (filters.timeScope === 'today') {
         deals = dealsInDateRange.filter(deal => new Date(deal.createdAt) >= todayStart);
     } else if (filters.timeScope === 'history') {
         deals = dealsInDateRange.filter(deal => new Date(deal.createdAt) < todayStart);
+    } else {
+        deals = dealsInDateRange;
+    }
+    
+    // Apply search query filtering
+    if (filters.query) {
+      const lowercasedQuery = filters.query.toLowerCase();
+      deals = deals.filter(deal =>
+        deal.title.toLowerCase().includes(lowercasedQuery) ||
+        deal.description.toLowerCase().includes(lowercasedQuery)
+      );
     }
 
+    return deals;
+
   } catch (e: any) {
-    console.error("Failed to fetch deals, likely due to Firestore permissions.", e);
-    // Return empty array on error to prevent crashes
+    console.error("Failed to fetch deals, likely due to Firestore permissions. Returning empty array.", e);
+    // Return empty array on error to prevent crashes on the page.
     return [];
   }
-  
-  // Apply search query filtering
-  if (filters.query) {
-    const lowercasedQuery = filters.query.toLowerCase();
-    deals = deals.filter(deal =>
-      deal.title.toLowerCase().includes(lowercasedQuery) ||
-      deal.description.toLowerCase().includes(lowercasedQuery)
-    );
-  }
-
-  return deals;
 }
 
 export async function getCategories(): Promise<string[]> {
@@ -159,7 +161,7 @@ export async function getCategories(): Promise<string[]> {
     const categories = querySnapshot.docs.map(doc => doc.data().name as string);
     return Array.from(new Set(categories));
   } catch(e) {
-     console.error("Failed to fetch categories, likely due to Firestore permissions.", e);
+     console.error("Failed to fetch categories, likely due to Firestore permissions. Returning empty array.", e);
      return [];
   }
 }

@@ -16,30 +16,17 @@ type HistoryPageProps = {
 };
 
 async function DealsHistorySection({ query, category }: { query: string; category: string }) {
-  let deals: Deal[] = [];
-  let categories: string[] = [];
-  let error: string | null = null;
+  const deals = await getDeals({ query, category, timeScope: 'history' });
+  const categories = await getCategories();
 
-  try {
-    const [fetchedDeals, fetchedCategories] = await Promise.all([
-      getDeals({ query, category, timeScope: 'history' }),
-      getCategories(),
-    ]);
-    deals = fetchedDeals;
-    categories = Array.from(new Set(fetchedCategories));
-  } catch (e: any) {
-    console.error("Failed to fetch data, likely due to Firestore permissions.", e);
-    error = e.message || "An unexpected error occurred.";
-  }
-
-  if (error) {
+  if (!deals || !categories) {
     return (
       <div className="container mx-auto px-4 py-8">
         <Alert variant="destructive">
           <AlertTriangle className="h-4 w-4" />
           <AlertTitle>Error Fetching Deals</AlertTitle>
           <AlertDescription>
-            There was a problem fetching data from the database. This could be due to network issues or incorrect Firestore security rules.
+            There was a problem fetching data from the database. Please check your connection or Firestore security rules.
           </AlertDescription>
         </Alert>
       </div>

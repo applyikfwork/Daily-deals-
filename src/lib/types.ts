@@ -16,7 +16,6 @@ export interface FooterSettings {
     privacyPolicyUrl: string;
     termsOfServiceUrl: string;
     twitterUrl: string;
-    githubUrl: string;
     linkedinUrl: string;
     youtubeUrl: string;
 }

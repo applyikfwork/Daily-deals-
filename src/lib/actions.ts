@@ -50,7 +50,6 @@ const footerSettingsSchema = z.object({
   privacyPolicyUrl: urlOrHash,
   termsOfServiceUrl: urlOrHash,
   twitterUrl: urlOrHash,
-  githubUrl: urlOrHash,
   linkedinUrl: urlOrHash,
   youtubeUrl: urlOrHash,
 });

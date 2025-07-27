@@ -88,7 +88,6 @@ async function seedInitialData() {
                 privacyPolicyUrl: "#",
                 termsOfServiceUrl: "#",
                 twitterUrl: "#",
-                githubUrl: "#",
                 linkedinUrl: "#",
                 youtubeUrl: "#",
             });
@@ -111,26 +110,34 @@ export async function getDeals(filters: { query?: string, category?: string, tim
     q = query(q, where('category', '==', filters.category));
   }
   
-  const querySnapshot = await getDocs(q);
+  let deals: Deal[] = [];
+  try {
+    const querySnapshot = await getDocs(q);
 
-  let allDeals: Deal[] = querySnapshot.docs.map(doc => ({
-    id: doc.id,
-    ...doc.data(),
-    createdAt: (doc.data().createdAt as Timestamp).toDate().toISOString(),
-    expireAt: (doc.data().expireAt as Timestamp).toDate().toISOString(),
-  } as Deal));
+    let allDeals: Deal[] = querySnapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data(),
+      createdAt: (doc.data().createdAt as Timestamp).toDate().toISOString(),
+      expireAt: (doc.data().expireAt as Timestamp).toDate().toISOString(),
+    } as Deal));
+  
+    // Filter by date range first
+    let dealsInDateRange = allDeals.filter(deal => new Date(deal.createdAt) >= fifteenDaysAgo);
+  
+    // Apply time scope filtering
+    deals = dealsInDateRange;
+    if (filters.timeScope === 'today') {
+        deals = dealsInDateRange.filter(deal => new Date(deal.createdAt) >= todayStart);
+    } else if (filters.timeScope === 'history') {
+        deals = dealsInDateRange.filter(deal => new Date(deal.createdAt) < todayStart);
+    }
 
-  // Filter by date range first
-  let dealsInDateRange = allDeals.filter(deal => new Date(deal.createdAt) >= fifteenDaysAgo);
-
-  // Apply time scope filtering
-  let deals = dealsInDateRange;
-  if (filters.timeScope === 'today') {
-      deals = dealsInDateRange.filter(deal => new Date(deal.createdAt) >= todayStart);
-  } else if (filters.timeScope === 'history') {
-      deals = dealsInDateRange.filter(deal => new Date(deal.createdAt) < todayStart);
+  } catch (e: any) {
+    console.error("Failed to fetch deals, likely due to Firestore permissions.", e);
+    // Return empty array on error to prevent crashes
+    return [];
   }
-
+  
   // Apply search query filtering
   if (filters.query) {
     const lowercasedQuery = filters.query.toLowerCase();
@@ -144,10 +151,15 @@ export async function getDeals(filters: { query?: string, category?: string, tim
 }
 
 export async function getCategories(): Promise<string[]> {
-  const categoriesQuery = query(categoriesCollection, orderBy('name'));
-  const querySnapshot = await getDocs(categoriesQuery);
-  const categories = querySnapshot.docs.map(doc => doc.data().name as string);
-  return Array.from(new Set(categories));
+  try {
+    const categoriesQuery = query(categoriesCollection, orderBy('name'));
+    const querySnapshot = await getDocs(categoriesQuery);
+    const categories = querySnapshot.docs.map(doc => doc.data().name as string);
+    return Array.from(new Set(categories));
+  } catch(e) {
+     console.error("Failed to fetch categories, likely due to Firestore permissions.", e);
+     return [];
+  }
 }
 
 export async function addCategoryToDb(categoryName: string): Promise<string> {
@@ -202,11 +214,10 @@ export async function deleteDealFromDb(id: string): Promise<{ success: boolean }
 }
 
 export async function getFooterSettings(): Promise<FooterSettings> {
-    const defaultSettings = {
+    const defaultSettings: FooterSettings = {
         privacyPolicyUrl: "#",
         termsOfServiceUrl: "#",
         twitterUrl: "#",
-        githubUrl: "#",
         linkedinUrl: "#",
         youtubeUrl: "#",
     };

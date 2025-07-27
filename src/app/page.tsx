@@ -22,7 +22,7 @@ async function DealsSection({ query, category }: { query: string; category: stri
 
   try {
     const [fetchedDeals, fetchedCategories] = await Promise.all([
-      getDeals({ query, category }),
+      getDeals({ query, category, timeScope: 'today' }),
       getCategories(),
     ]);
     deals = fetchedDeals;
@@ -47,7 +47,7 @@ async function DealsSection({ query, category }: { query: string; category: stri
   return (
     <section className="mt-12">
       <h2 className="text-3xl font-bold mb-6 text-center text-foreground/90">
-        🕒 Last 15 Days Deals
+        ✨ Today's Hottest Deals
       </h2>
       
       <DealFilters categories={categories} />
@@ -78,7 +78,7 @@ export default async function Home({ searchParams }: HomeProps) {
       <Suspense fallback={
           <section className="mt-12">
             <h2 className="text-3xl font-bold mb-6 text-center text-foreground/90">
-              🕒 Last 15 Days Deals
+              ✨ Today's Hottest Deals
             </h2>
             <div className="mb-8 flex flex-col sm:flex-row gap-4">
               <div className="h-10 bg-muted rounded-md w-full"></div>

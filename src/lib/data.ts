@@ -14,34 +14,48 @@ import {
   writeBatch,
   runTransaction,
 } from 'firebase/firestore';
-import { subDays, addDays } from 'date-fns';
+import { subDays, addDays, startOfToday, endOfToday, startOfDay } from 'date-fns';
 
 const dealsCollection = collection(db, 'deals');
 const categoriesCollection = collection(db, 'categories');
 
 // NOTE: The following functions now interact with Firestore.
 
-export async function getDeals(filters: { query?: string, category?: string } = {}): Promise<Deal[]> {
+export async function getDeals(filters: { query?: string, category?: string, timeScope?: 'today' | 'history' } = {}): Promise<Deal[]> {
   const now = new Date();
-  const cutoff = subDays(now, 15);
+  const todayStart = startOfToday();
+  const fifteenDaysAgo = startOfDay(subDays(now, 15));
 
   let q = query(dealsCollection, orderBy('createdAt', 'desc'));
 
-  if (filters.category && filters.category !== 'all') {
-    q = query(dealsCollection, where('category', '==', filters.category), orderBy('createdAt', 'desc'));
-  }
-
   const querySnapshot = await getDocs(q);
 
-  let deals: Deal[] = querySnapshot.docs
-    .map(doc => ({
-      id: doc.id,
-      ...doc.data(),
-      createdAt: (doc.data().createdAt as Timestamp).toDate().toISOString(),
-      expireAt: (doc.data().expireAt as Timestamp).toDate().toISOString(),
-    } as Deal))
-    .filter(deal => new Date(deal.createdAt) >= cutoff);
+  let allDeals: Deal[] = querySnapshot.docs.map(doc => ({
+    id: doc.id,
+    ...doc.data(),
+    createdAt: (doc.data().createdAt as Timestamp).toDate().toISOString(),
+    expireAt: (doc.data().expireAt as Timestamp).toDate().toISOString(),
+  } as Deal));
 
+  // Filter by date range first
+  let deals = allDeals.filter(deal => {
+      const createdAt = new Date(deal.createdAt);
+      return createdAt >= fifteenDaysAgo;
+  });
+
+  // Filter by time scope (today or history)
+  if (filters.timeScope === 'today') {
+      deals = deals.filter(deal => new Date(deal.createdAt) >= todayStart);
+  } else if (filters.timeScope === 'history') {
+      deals = deals.filter(deal => new Date(deal.createdAt) < todayStart);
+  }
+
+  // Filter by category
+  if (filters.category && filters.category !== 'all') {
+    deals = deals.filter(deal => deal.category === filters.category);
+  }
+
+  // Filter by search query
   if (filters.query) {
     const lowercasedQuery = filters.query.toLowerCase();
     deals = deals.filter(deal =>
@@ -52,7 +66,6 @@ export async function getDeals(filters: { query?: string, category?: string } = 
 
   return deals;
 }
-
 
 async function seedInitialData() {
     const categoriesQuery = query(categoriesCollection);
@@ -132,7 +145,7 @@ export async function getAdminPageData(): Promise<{ deals: Deal[], categories: s
         expireAt: (doc.data().expireAt as Timestamp).toDate().toISOString(),
     } as Deal));
 
-    return { deals, categories };
+    return { deals, categories: Array.from(new Set(categories)) };
 }
 
 export async function getCategories(): Promise<string[]> {

@@ -2,7 +2,7 @@
 'use client';
 
 import Link from 'next/link';
-import { Package2, UserCog, LogIn, LogOut, UserPlus } from 'lucide-react';
+import { Package2, UserCog, LogIn, LogOut, UserPlus, History } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/use-auth';
 
@@ -22,6 +22,12 @@ export default function Header() {
         </Link>
         <div className="flex flex-1 items-center justify-end space-x-2">
           <nav className="flex items-center gap-2">
+             <Button variant="ghost" asChild>
+                <Link href="/history">
+                  <History className="mr-2 h-4 w-4" />
+                  Deal History
+                </Link>
+            </Button>
             {user && (
               <Button variant="ghost" size="icon" asChild>
                 <Link href="/admin">

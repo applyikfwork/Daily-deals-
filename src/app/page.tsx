@@ -7,6 +7,7 @@ import { Suspense } from 'react';
 import type { Deal } from '@/lib/types';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { AlertTriangle } from 'lucide-react';
+import { Skeleton } from '@/components/ui/skeleton';
 
 type HomeProps = {
   searchParams?: {
@@ -21,7 +22,6 @@ async function DealsSection({ query, category }: { query: string; category: stri
   let error: string | null = null;
 
   try {
-    // Fetch deals and categories in parallel.
     const [fetchedDeals, fetchedCategories] = await Promise.all([
       getDeals({ query, category, timeScope: 'today' }),
       getCategories(),
@@ -48,14 +48,10 @@ async function DealsSection({ query, category }: { query: string; category: stri
   }
 
   return (
-    <section className="mt-12">
-      <h2 className="text-3xl font-bold mb-6 text-center text-foreground/90">
-        ✨ Today's Hottest Deals
-      </h2>
-      
+    <div className="space-y-8">
       <DealFilters categories={categories} />
       <DealList deals={deals} />
-    </section>
+    </div>
   );
 }
 
@@ -65,7 +61,6 @@ async function TopDealSection() {
         topDeals = await getDeals({ category: 'all', timeScope: 'today' });
     } catch (e: any) {
         console.error("Failed to fetch top deals", e);
-        // Do not render an alert here to avoid layout shifts. The main deal section will show a more prominent error.
         return null;
     }
 
@@ -82,25 +77,27 @@ export default function Home({ searchParams }: HomeProps) {
   const category = searchParams?.category || 'all';
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <Suspense fallback={<div className="h-[250px] bg-muted rounded-2xl animate-pulse"></div>}>
+    <div className="container mx-auto px-4 py-8 space-y-12">
+      <Suspense fallback={<Skeleton className="h-[350px] w-full rounded-2xl" />}>
         <TopDealSection />
       </Suspense>
 
-      <Suspense fallback={
-          <section className="mt-12">
-            <h2 className="text-3xl font-bold mb-6 text-center text-foreground/90">
-              ✨ Today's Hottest Deals
-            </h2>
-            <div className="mb-8 flex flex-col sm:flex-row gap-4">
-              <div className="h-10 bg-muted rounded-md w-full animate-pulse"></div>
-              <div className="h-10 bg-muted rounded-md w-full sm:w-[200px] animate-pulse"></div>
+      <section>
+        <h2 className="text-3xl font-bold tracking-tighter mb-8 text-center">
+            ✨ Today's Hottest Deals
+        </h2>
+        <Suspense fallback={
+            <div className="space-y-8">
+              <div className="flex flex-col sm:flex-row gap-4">
+                <Skeleton className="h-10 w-full flex-grow" />
+                <Skeleton className="h-10 w-full sm:w-[200px]" />
+              </div>
+              <DealList.Skeleton />
             </div>
-            <DealList.Skeleton />
-          </section>
-      }>
-        <DealsSection query={query} category={category} />
-      </Suspense>
+        }>
+          <DealsSection query={query} category={category} />
+        </Suspense>
+      </section>
     </div>
   );
 }

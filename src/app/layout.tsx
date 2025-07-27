@@ -8,6 +8,9 @@ import Footer from '@/components/footer';
 export const metadata: Metadata = {
   title: 'Deal Finder',
   description: 'Find the best deals on the web.',
+  icons: {
+    icon: '/favicon.ico',
+  },
 };
 
 export default function RootLayout({

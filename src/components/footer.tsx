@@ -21,6 +21,23 @@ export default async function Footer() {
           </div>
           <div className="grid grid-cols-2 gap-8">
             <div>
+              <h3 className="font-semibold mb-4">Follow Us</h3>
+              <div className="flex space-x-4">
+                <Link href={settings.twitterUrl} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary transition-colors">
+                  <Twitter className="h-5 w-5" />
+                  <span className="sr-only">Twitter</span>
+                </Link>
+                <Link href={settings.linkedinUrl} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary transition-colors">
+                  <Linkedin className="h-5 w-5" />
+                  <span className="sr-only">LinkedIn</span>
+                </Link>
+                <Link href={settings.youtubeUrl} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary transition-colors">
+                  <Youtube className="h-5 w-5" />
+                  <span className="sr-only">YouTube</span>
+                </Link>
+              </div>
+            </div>
+             <div>
               <h3 className="font-semibold mb-4">Quick Links</h3>
               <ul className="space-y-2">
                 <li>
@@ -31,32 +48,18 @@ export default async function Footer() {
                 </li>
               </ul>
             </div>
-            <div>
-              <h3 className="font-semibold mb-4">Follow Us</h3>
-              <div className="flex space-x-4">
-              <Link href={settings.twitterUrl} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary transition-colors">
-                <Twitter className="h-5 w-5" />
-                <span className="sr-only">Twitter</span>
-              </Link>
-              <Link href={settings.linkedinUrl} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary transition-colors">
-                <Linkedin className="h-5 w-5" />
-                <span className="sr-only">LinkedIn</span>
-              </Link>
-              <Link href={settings.youtubeUrl} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary transition-colors">
-                <Youtube className="h-5 w-5" />
-                <span className="sr-only">YouTube</span>
-              </Link>
-            </div>
-            </div>
           </div>
-          <div className="text-sm text-muted-foreground">
+          <div className="text-sm">
              <h3 className="font-semibold mb-4 text-secondary-foreground">Legal</h3>
               <ul className="space-y-2">
                 <li>
-                  <Link href={settings.privacyPolicyUrl} target="_blank" rel="noopener noreferrer" className="text-sm hover:text-primary transition-colors">Privacy Policy</Link>
+                  <Link href={settings.privacyPolicyUrl} className="text-sm text-muted-foreground hover:text-primary transition-colors">Privacy Policy</Link>
                 </li>
                 <li>
-                  <Link href={settings.termsOfServiceUrl} target="_blank" rel="noopener noreferrer" className="text-sm hover:text-primary transition-colors">Terms of Service</Link>
+                  <Link href={settings.termsOfServiceUrl} className="text-sm text-muted-foreground hover:text-primary transition-colors">Terms of Service</Link>
+                </li>
+                <li>
+                  <Link href={settings.affiliateDisclaimerUrl} className="text-sm text-muted-foreground hover:text-primary transition-colors">Affiliate Disclaimer</Link>
                 </li>
               </ul>
           </div>

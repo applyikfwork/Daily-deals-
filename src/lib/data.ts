@@ -85,8 +85,9 @@ async function seedInitialData() {
         if (!footerSnapshot.exists()) {
             console.log('Seeding initial footer settings...');
             await setDoc(footerSettingsDoc, {
-                privacyPolicyUrl: "#",
-                termsOfServiceUrl: "#",
+                privacyPolicyUrl: "/privacy",
+                termsOfServiceUrl: "/terms",
+                affiliateDisclaimerUrl: "/disclaimer",
                 twitterUrl: "#",
                 linkedinUrl: "#",
                 youtubeUrl: "#",
@@ -219,8 +220,9 @@ export async function deleteDealFromDb(id: string): Promise<{ success: boolean }
 
 export async function getFooterSettings(): Promise<FooterSettings> {
     const defaultSettings: FooterSettings = {
-        privacyPolicyUrl: "#",
-        termsOfServiceUrl: "#",
+        privacyPolicyUrl: "/privacy",
+        termsOfServiceUrl: "/terms",
+        affiliateDisclaimerUrl: "/disclaimer",
         twitterUrl: "#",
         linkedinUrl: "#",
         youtubeUrl: "#",
@@ -248,7 +250,7 @@ export async function getFooterSettings(): Promise<FooterSettings> {
     }
 }
 
-export async function updateFooterSettingsInDb(settings: FooterSettings): Promise<void> {
+export async function updateFooterSettingsInDb(settings: Partial<FooterSettings>): Promise<void> {
     const footerSettingsDoc = doc(settingsCollection, 'footer');
     await setDoc(footerSettingsDoc, settings, { merge: true });
 }

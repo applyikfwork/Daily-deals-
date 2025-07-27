@@ -15,6 +15,7 @@ export interface Deal {
 export interface FooterSettings {
     privacyPolicyUrl: string;
     termsOfServiceUrl: string;
+    affiliateDisclaimerUrl: string;
     twitterUrl: string;
     linkedinUrl: string;
     youtubeUrl: string;

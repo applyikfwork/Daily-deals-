@@ -1,3 +1,4 @@
+
 'use client';
 
 import * as React from 'react';
@@ -21,6 +22,17 @@ import Image from 'next/image';
 
 interface DealsTableProps {
   data: Deal[];
+}
+
+const ALLOWED_HOSTS = ['placehold.co', 'm.media-amazon.com'];
+
+function isValidImageUrl(url: string) {
+  try {
+    const parsedUrl = new URL(url);
+    return ALLOWED_HOSTS.includes(parsedUrl.hostname);
+  } catch (error) {
+    return false;
+  }
 }
 
 export function DealsTable({ data }: DealsTableProps) {
@@ -62,44 +74,50 @@ export function DealsTable({ data }: DealsTableProps) {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {data.map((deal) => (
-            <TableRow key={deal.id}>
-              <TableCell>
-                <Image
-                  src={deal.imageUrl}
-                  alt={deal.title}
-                  width={50}
-                  height={50}
-                  className="rounded-md object-cover"
-                  data-ai-hint="product photo"
-                />
-              </TableCell>
-              <TableCell className="font-medium">{deal.title}</TableCell>
-              <TableCell>
-                <Badge variant="outline">{deal.category}</Badge>
-              </TableCell>
-              <TableCell>₹{deal.price.toLocaleString('en-IN')}</TableCell>
-              <TableCell>
-                {deal.isHotDeal && (
-                  <Badge variant="destructive" className="flex items-center w-fit">
-                    <Flame className="h-3 w-3 mr-1" />
-                    Hot
-                  </Badge>
-                )}
-              </TableCell>
-              <TableCell>{format(new Date(deal.expireAt), 'PPP')}</TableCell>
-              <TableCell className="text-right">
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => handleDelete(deal.id)}
-                  disabled={isPending}
-                >
-                  <Trash2 className="h-4 w-4" />
-                </Button>
-              </TableCell>
-            </TableRow>
-          ))}
+          {data.map((deal) => {
+            const imageUrl = isValidImageUrl(deal.imageUrl)
+              ? deal.imageUrl
+              : 'https://placehold.co/50x50.png';
+            
+            return (
+              <TableRow key={deal.id}>
+                <TableCell>
+                  <Image
+                    src={imageUrl}
+                    alt={deal.title}
+                    width={50}
+                    height={50}
+                    className="rounded-md object-cover"
+                    data-ai-hint="product photo"
+                  />
+                </TableCell>
+                <TableCell className="font-medium">{deal.title}</TableCell>
+                <TableCell>
+                  <Badge variant="outline">{deal.category}</Badge>
+                </TableCell>
+                <TableCell>₹{deal.price.toLocaleString('en-IN')}</TableCell>
+                <TableCell>
+                  {deal.isHotDeal && (
+                    <Badge variant="destructive" className="flex items-center w-fit">
+                      <Flame className="h-3 w-3 mr-1" />
+                      Hot
+                    </Badge>
+                  )}
+                </TableCell>
+                <TableCell>{format(new Date(deal.expireAt), 'PPP')}</TableCell>
+                <TableCell className="text-right">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => handleDelete(deal.id)}
+                    disabled={isPending}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </TableCell>
+              </TableRow>
+            );
+          })}
         </TableBody>
       </Table>
     </div>

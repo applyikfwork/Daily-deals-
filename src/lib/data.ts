@@ -120,14 +120,18 @@ export async function getDeals(filters: { query?: string, category?: string, tim
     expireAt: (doc.data().expireAt as Timestamp).toDate().toISOString(),
   } as Deal));
 
-  let deals = allDeals.filter(deal => new Date(deal.createdAt) >= fifteenDaysAgo);
+  // Filter by date range first
+  let dealsInDateRange = allDeals.filter(deal => new Date(deal.createdAt) >= fifteenDaysAgo);
 
+  // Apply time scope filtering
+  let deals = dealsInDateRange;
   if (filters.timeScope === 'today') {
-      deals = deals.filter(deal => new Date(deal.createdAt) >= todayStart);
+      deals = dealsInDateRange.filter(deal => new Date(deal.createdAt) >= todayStart);
   } else if (filters.timeScope === 'history') {
-      deals = deals.filter(deal => new Date(deal.createdAt) < todayStart);
+      deals = dealsInDateRange.filter(deal => new Date(deal.createdAt) < todayStart);
   }
 
+  // Apply search query filtering
   if (filters.query) {
     const lowercasedQuery = filters.query.toLowerCase();
     deals = deals.filter(deal =>
@@ -137,27 +141,6 @@ export async function getDeals(filters: { query?: string, category?: string, tim
   }
 
   return deals;
-}
-
-export async function getAdminPageData(): Promise<{ deals: Deal[], categories: string[], footerSettings: FooterSettings }> {
-    await seedInitialData();
-
-    const dealsQuery = query(dealsCollection, orderBy('createdAt', 'desc'));
-    
-    const [dealsSnapshot, categories, footerSettings] = await Promise.all([
-        getDocs(dealsQuery),
-        getCategories(),
-        getFooterSettings()
-    ]);
-    
-    let deals = dealsSnapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data(),
-        createdAt: (doc.data().createdAt as Timestamp).toDate().toISOString(),
-        expireAt: (doc.data().expireAt as Timestamp).toDate().toISOString(),
-    } as Deal));
-
-    return { deals, categories: Array.from(new Set(categories)), footerSettings };
 }
 
 export async function getCategories(): Promise<string[]> {
@@ -232,6 +215,8 @@ export async function getFooterSettings(): Promise<FooterSettings> {
     try {
         const footerSnapshot = await getDoc(footerSettingsDoc);
         if (!footerSnapshot.exists()) {
+            // If the document doesn't exist, seed it for future use but return defaults for now.
+             await setDoc(footerSettingsDoc, defaultSettings);
             return defaultSettings;
         }
         return footerSnapshot.data() as FooterSettings;

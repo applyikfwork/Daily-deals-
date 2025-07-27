@@ -220,25 +220,25 @@ export async function deleteDealFromDb(id: string): Promise<{ success: boolean }
 
 export async function getFooterSettings(): Promise<FooterSettings> {
     const footerSettingsDoc = doc(settingsCollection, 'footer');
-    let footerSnapshot;
+    const defaultSettings = {
+        privacyPolicyUrl: "#",
+        termsOfServiceUrl: "#",
+        twitterUrl: "#",
+        githubUrl: "#",
+        linkedinUrl: "#",
+        youtubeUrl: "#",
+    };
+
     try {
-        footerSnapshot = await getDoc(footerSettingsDoc);
-    } catch(e) {
-        console.error("Failed to fetch footer settings, using defaults.", e);
-    }
-
-     if (!footerSnapshot?.exists()) {
-        return {
-            privacyPolicyUrl: "#",
-            termsOfServiceUrl: "#",
-            twitterUrl: "#",
-            githubUrl: "#",
-            linkedinUrl: "#",
-            youtubeUrl: "#",
+        const footerSnapshot = await getDoc(footerSettingsDoc);
+        if (!footerSnapshot.exists()) {
+            return defaultSettings;
         }
+        return footerSnapshot.data() as FooterSettings;
+    } catch(e) {
+        console.error("Failed to fetch footer settings, likely due to Firestore permissions. Using default values.", e);
+        return defaultSettings;
     }
-
-    return footerSnapshot.data() as FooterSettings;
 }
 
 export async function updateFooterSettingsInDb(settings: FooterSettings): Promise<void> {

@@ -9,7 +9,7 @@ import { AlertTriangle } from 'lucide-react';
 import { format } from 'date-fns';
 
 type HistoryPageProps = {
-  searchParams?: {
+  searchParams: {
     query?: string;
     category?: string;
   };
@@ -26,7 +26,7 @@ async function DealsHistorySection({ query, category }: { query: string; categor
       getCategories(),
     ]);
     deals = fetchedDeals;
-    categories = fetchedCategories;
+    categories = Array.from(new Set(fetchedCategories));
   } catch (e: any) {
     console.error("Failed to fetch data, likely due to Firestore permissions.", e);
     error = e.message || "An unexpected error occurred.";
@@ -92,7 +92,7 @@ async function DealsHistorySection({ query, category }: { query: string; categor
 }
 
 
-export default async function HistoryPage({ searchParams }: HistoryPageProps) {
+export default function HistoryPage({ searchParams }: HistoryPageProps) {
   const query = searchParams?.query || '';
   const category = searchParams?.category || 'all';
 
@@ -100,14 +100,14 @@ export default async function HistoryPage({ searchParams }: HistoryPageProps) {
       <Suspense fallback={
            <div className="container mx-auto px-4 py-8">
             <div className="flex flex-col items-center text-center mb-8">
-                 <div className="h-10 bg-muted rounded-md w-1/2 mb-2"></div>
-                 <div className="h-6 bg-muted rounded-md w-2/3"></div>
+                 <div className="h-10 bg-muted rounded-md w-1/2 mb-2 animate-pulse"></div>
+                 <div className="h-6 bg-muted rounded-md w-2/3 animate-pulse"></div>
             </div>
              <div className="mb-8 flex flex-col sm:flex-row gap-4">
-              <div className="h-10 bg-muted rounded-md w-full"></div>
-              <div className="h-10 bg-muted rounded-md w-full sm:w-[200px]"></div>
+              <div className="h-10 bg-muted rounded-md w-full animate-pulse"></div>
+              <div className="h-10 bg-muted rounded-md w-full sm:w-[200px] animate-pulse"></div>
             </div>
-             <div className="h-8 bg-muted rounded-md w-1/3 mb-6"></div>
+             <div className="h-8 bg-muted rounded-md w-1/3 mb-6 animate-pulse"></div>
             <DealList.Skeleton />
           </div>
       }>

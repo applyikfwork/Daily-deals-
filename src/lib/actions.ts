@@ -3,8 +3,9 @@
 
 import { revalidatePath } from 'next/cache';
 import * as z from 'zod';
-import { addDealToDb, deleteDealFromDb, addCategoryToDb } from './data';
+import { addDealToDb, deleteDealFromDb, addCategoryToDb, updateFooterSettingsInDb } from './data';
 import { categorizeDeal } from '@/ai/flows/categorize-deal';
+import type { FooterSettings } from './types';
 
 // Schema for adding a deal from the form
 const dealSchema = z.object({
@@ -108,4 +109,38 @@ export async function addCategoryAction(data: unknown): Promise<ActionResponse> 
         const errorMessage = error instanceof Error ? error.message : 'Could not add the category.';
         return { success: false, error: errorMessage };
     }
+}
+
+const urlOrHash = z.string().refine(val => val === '#' || z.string().url().safeParse(val).success, {
+  message: "Must be a valid URL or '#'",
+});
+
+const footerSettingsSchema = z.object({
+  privacyPolicyUrl: urlOrHash,
+  termsOfServiceUrl: urlOrHash,
+  twitterUrl: urlOrHash,
+  githubUrl: urlOrHash,
+  linkedinUrl: urlOrHash,
+  youtubeUrl: urlOrHash,
+});
+
+
+export async function updateFooterSettingsAction(data: unknown): Promise<ActionResponse> {
+  const validationResult = footerSettingsSchema.safeParse(data);
+
+  if(!validationResult.success) {
+    console.error(validationResult.error.flatten().fieldErrors);
+    return { success: false, error: 'Invalid data provided.' };
+  }
+
+  try {
+    await updateFooterSettingsInDb(validationResult.data);
+    revalidatePath('/');
+    revalidatePath('/admin');
+    revalidatePath('/history');
+    return { success: true };
+  } catch (error) {
+    console.error('Failed to update footer settings:', error);
+    return { success: false, error: 'Could not update footer settings.' };
+  }
 }

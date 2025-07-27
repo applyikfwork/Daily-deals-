@@ -26,21 +26,23 @@ async function DealsSection({ query, category }: { query: string; category: stri
       getCategories(),
     ]);
     deals = fetchedDeals;
-    categories = fetchedCategories;
+    categories = Array.from(new Set(fetchedCategories));
   } catch (e: any) {
     console.error("Failed to fetch data, likely due to Firestore permissions.", e);
     error = e.message || "An unexpected error occurred.";
   }
-
+  
   if (error) {
     return (
-      <Alert variant="destructive">
-        <AlertTriangle className="h-4 w-4" />
-        <AlertTitle>Error Fetching Deals</AlertTitle>
-        <AlertDescription>
-          There was a problem fetching data from the database. This is likely due to Firestore security rules. Please ensure your rules allow public read access.
-        </AlertDescription>
-      </Alert>
+       <div className="container mx-auto px-4 py-8">
+        <Alert variant="destructive">
+          <AlertTriangle className="h-4 w-4" />
+          <AlertTitle>Error Fetching Deals</AlertTitle>
+          <AlertDescription>
+            There was a problem fetching data from the database. This is likely due to Firestore security rules. Please ensure your rules allow public read access.
+          </AlertDescription>
+        </Alert>
+      </div>
     );
   }
 
@@ -56,23 +58,32 @@ async function DealsSection({ query, category }: { query: string; category: stri
   );
 }
 
+async function TopDealSection() {
+    let topDeals: Deal[] = [];
+    try {
+        topDeals = await getDeals({ category: 'all', timeScope: 'today' });
+    } catch (e: any) {
+        console.error("Failed to fetch top deals", e);
+        // Do not render an alert here to avoid layout shifts. The main deal section will show a more prominent error.
+        return null;
+    }
 
-export default async function Home({ searchParams }: HomeProps) {
+    const hotDeal = topDeals.find(deal => deal.isHotDeal) || (topDeals.length > 0 ? topDeals[0] : null);
+    
+    if (!hotDeal) return null;
+
+    return <TopDealBanner deal={hotDeal} />;
+}
+
+
+export default function Home({ searchParams }: HomeProps) {
   const query = searchParams?.query || '';
   const category = searchParams?.category || 'all';
 
-  // Fetch top deal separately to avoid delaying the whole page
-  const topDeals = await getDeals({ category: 'all' });
-  
-  const hotDeal = topDeals.length > 0 
-    ? topDeals.find(deal => deal.isHotDeal) || topDeals[0]
-    : null;
-
-
   return (
     <div className="container mx-auto px-4 py-8">
-      <Suspense fallback={<div>Loading banner...</div>}>
-        {hotDeal && <TopDealBanner deal={hotDeal} />}
+      <Suspense fallback={<div className="h-[250px] bg-muted rounded-2xl animate-pulse"></div>}>
+        <TopDealSection />
       </Suspense>
 
       <Suspense fallback={
@@ -81,8 +92,8 @@ export default async function Home({ searchParams }: HomeProps) {
               ✨ Today's Hottest Deals
             </h2>
             <div className="mb-8 flex flex-col sm:flex-row gap-4">
-              <div className="h-10 bg-muted rounded-md w-full"></div>
-              <div className="h-10 bg-muted rounded-md w-full sm:w-[200px]"></div>
+              <div className="h-10 bg-muted rounded-md w-full animate-pulse"></div>
+              <div className="h-10 bg-muted rounded-md w-full sm:w-[200px] animate-pulse"></div>
             </div>
             <DealList.Skeleton />
           </section>

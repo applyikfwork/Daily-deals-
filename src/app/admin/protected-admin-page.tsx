@@ -6,36 +6,41 @@ import { DealsTable } from '@/components/admin/deals-table';
 import { AddDealDialog } from '@/components/admin/add-deal-dialog';
 import { Suspense, useEffect, useState, useRef } from 'react';
 import { useAuth } from '@/hooks/use-auth';
-import { type Deal } from '@/lib/types';
+import { type Deal, type FooterSettings } from '@/lib/types';
 import { AlertTriangle } from 'lucide-react';
 import { CategoryManager } from '@/components/admin/category-manager';
+import { FooterManager } from '@/components/admin/footer-manager';
+
 
 const ADMIN_EMAIL = 'xyzadminserviceacc@gmail.com';
 
 export default function ProtectedAdminPage() {
-  const { user, loading } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const [deals, setDeals] = useState<Deal[]>([]);
   const [categories, setCategories] = useState<string[]>([]);
+  const [footerSettings, setFooterSettings] = useState<FooterSettings | null>(null);
   const [dataLoading, setDataLoading] = useState(true);
-  const [isAuthorized, setIsAuthorized] = useState<boolean | null>(null);
+  const [isAuthorized, setIsAuthorized] = useState(false);
+  const [initialCheck, setInitialCheck] = useState(false);
   const hasFetchedData = useRef(false);
 
   useEffect(() => {
-    if (loading) {
+    if (authLoading) {
       return;
     }
-    
+
     const authorized = user?.email === ADMIN_EMAIL;
     setIsAuthorized(authorized);
+    setInitialCheck(true);
 
     if (authorized && !hasFetchedData.current) {
       hasFetchedData.current = true;
       setDataLoading(true);
       getAdminPageData()
-        .then(({ deals, categories }) => {
+        .then(({ deals, categories, footerSettings }) => {
           setDeals(deals);
-          // Use a Set to ensure categories are unique before setting state
           setCategories(Array.from(new Set(categories)));
+          setFooterSettings(footerSettings);
         })
         .catch(error => {
           console.error("Failed to load admin data", error);
@@ -43,12 +48,12 @@ export default function ProtectedAdminPage() {
         .finally(() => {
           setDataLoading(false);
         });
-    } else if(!authorized) {
+    } else if (!authorized) {
       setDataLoading(false);
     }
-  }, [user, loading]);
+  }, [user, authLoading]);
 
-  if (loading || isAuthorized === null) {
+  if (!initialCheck || authLoading) {
     return (
       <div className="container mx-auto px-4 py-8">
         <h1 className="text-3xl font-bold">Loading Admin Panel...</h1>
@@ -83,22 +88,27 @@ export default function ProtectedAdminPage() {
         <h1 className="text-3xl font-bold">Admin Panel</h1>
       </div>
       <p className="mb-6 text-muted-foreground">
-        Welcome, {user?.email}. Manage your deals and categories here.
+        Welcome, {user?.email}. Manage your deals and site settings here.
       </p>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <div className="lg:col-span-2">
-          <div className="flex justify-between items-center mb-4">
-             <h2 className="text-2xl font-bold">Deals Management</h2>
-             <AddDealDialog categories={categories} />
-          </div>
-          <Suspense fallback={<DealsTable.Skeleton />}>
-            <DealsTable data={deals} />
-          </Suspense>
+       <div className="mb-8">
+        <div className="flex justify-between items-center mb-4">
+           <h2 className="text-2xl font-bold">Deals Management</h2>
+           <AddDealDialog categories={categories} />
         </div>
+        <Suspense fallback={<DealsTable.Skeleton />}>
+          <DealsTable data={deals} />
+        </Suspense>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         <div>
            <h2 className="text-2xl font-bold mb-4">Category Management</h2>
            <CategoryManager categories={categories} />
+        </div>
+        <div>
+           <h2 className="text-2xl font-bold mb-4">Footer Management</h2>
+           {footerSettings && <FooterManager settings={footerSettings} />}
         </div>
       </div>
     </div>

@@ -201,7 +201,7 @@ export function DealForm({ categories, onFormSubmit }: DealFormProps) {
             <FormItem>
               <FormLabel>Category</FormLabel>
                <div className="flex gap-2 items-center">
-                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <Select onValueChange={field.onChange} value={field.value}>
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder="Select a category" />

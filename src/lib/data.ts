@@ -98,6 +98,8 @@ async function seedInitialData() {
     }
 }
 
+seedInitialData();
+
 
 export async function getDeals(filters: { query?: string, category?: string, timeScope?: 'today' | 'history' | 'all' } = {}): Promise<Deal[]> {
   const now = new Date();

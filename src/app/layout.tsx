@@ -1,3 +1,4 @@
+
 import type { Metadata } from 'next';
 import './globals.css';
 import { cn } from '@/lib/utils';
@@ -41,8 +42,8 @@ export const metadata: Metadata = {
     // images: ['https://your-website.com/og-image.png'], // Replace with your OG image URL
   },
   icons: {
-    icon: '/icon.svg',
-    shortcut: '/favicon.ico',
+    icon: '/favicon.png',
+    shortcut: '/favicon.png',
     apple: '/apple-touch-icon.png', // Add an apple touch icon for iOS devices
   },
   robots: {

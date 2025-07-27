@@ -15,19 +15,15 @@ type HomeProps = {
   };
 };
 
-export default async function Home({ searchParams }: HomeProps) {
-  const query = searchParams?.query || '';
-  const category = searchParams?.category || 'all';
-
+async function DealsSection({ query, category }: { query: string; category: string }) {
   let deals: Deal[] = [];
   let categories: string[] = [];
   let error: string | null = null;
 
   try {
-    // These need to be fetched in parallel to avoid deadlocks in some cases
     const [fetchedDeals, fetchedCategories] = await Promise.all([
       getDeals({ query, category }),
-      getCategories()
+      getCategories(),
     ]);
     deals = fetchedDeals;
     categories = fetchedCategories;
@@ -35,24 +31,43 @@ export default async function Home({ searchParams }: HomeProps) {
     console.error("Failed to fetch data, likely due to Firestore permissions.", e);
     error = e.message || "An unexpected error occurred.";
   }
-  
-  const hotDeal = deals.length > 0 
-    ? deals.find(deal => deal.isHotDeal) || deals[0]
-    : null;
 
   if (error) {
     return (
-       <div className="container mx-auto px-4 py-8">
-         <Alert variant="destructive">
-          <AlertTriangle className="h-4 w-4" />
-          <AlertTitle>Error Fetching Deals</AlertTitle>
-          <AlertDescription>
-            There was a problem fetching data from the database. This is likely due to Firestore security rules. Please ensure your rules allow public read access.
-          </AlertDescription>
-        </Alert>
-      </div>
-    )
+      <Alert variant="destructive">
+        <AlertTriangle className="h-4 w-4" />
+        <AlertTitle>Error Fetching Deals</AlertTitle>
+        <AlertDescription>
+          There was a problem fetching data from the database. This is likely due to Firestore security rules. Please ensure your rules allow public read access.
+        </AlertDescription>
+      </Alert>
+    );
   }
+
+  return (
+    <section className="mt-12">
+      <h2 className="text-3xl font-bold mb-6 text-center text-foreground/90">
+        🕒 Last 15 Days Deals
+      </h2>
+      
+      <DealFilters categories={categories} />
+      <DealList deals={deals} />
+    </section>
+  );
+}
+
+
+export default async function Home({ searchParams }: HomeProps) {
+  const query = searchParams?.query || '';
+  const category = searchParams?.category || 'all';
+
+  // Fetch top deal separately to avoid delaying the whole page
+  const topDeals = await getDeals({ category: 'all' });
+  
+  const hotDeal = topDeals.length > 0 
+    ? topDeals.find(deal => deal.isHotDeal) || topDeals[0]
+    : null;
+
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -60,19 +75,20 @@ export default async function Home({ searchParams }: HomeProps) {
         {hotDeal && <TopDealBanner deal={hotDeal} />}
       </Suspense>
 
-      <section className="mt-12">
-        <h2 className="text-3xl font-bold mb-6 text-center text-foreground/90">
-          🕒 Last 15 Days Deals
-        </h2>
-        
-        <Suspense fallback={<div>Loading filters...</div>}>
-          <DealFilters categories={categories} />
-        </Suspense>
-
-        <Suspense fallback={<DealList.Skeleton />}>
-          <DealList deals={deals} />
-        </Suspense>
-      </section>
+      <Suspense fallback={
+          <section className="mt-12">
+            <h2 className="text-3xl font-bold mb-6 text-center text-foreground/90">
+              🕒 Last 15 Days Deals
+            </h2>
+            <div className="mb-8 flex flex-col sm:flex-row gap-4">
+              <div className="h-10 bg-muted rounded-md w-full"></div>
+              <div className="h-10 bg-muted rounded-md w-full sm:w-[200px]"></div>
+            </div>
+            <DealList.Skeleton />
+          </section>
+      }>
+        <DealsSection query={query} category={category} />
+      </Suspense>
     </div>
   );
 }

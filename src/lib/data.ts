@@ -227,12 +227,19 @@ export async function getFooterSettings(): Promise<FooterSettings> {
     try {
         const footerSettingsDoc = doc(settingsCollection, 'footer');
         const footerSnapshot = await getDoc(footerSettingsDoc);
+        
         if (!footerSnapshot.exists()) {
             console.log("Footer settings not found, returning default. This may be due to Firestore rules.");
-            // No need to seed here, just return defaults.
             return defaultSettings;
         }
-        return footerSnapshot.data() as FooterSettings;
+        
+        const dbData = footerSnapshot.data() || {};
+        
+        // Merge database data with defaults to ensure all properties exist
+        return {
+            ...defaultSettings,
+            ...dbData,
+        };
     } catch(e) {
         console.error("Failed to fetch footer settings, likely due to Firestore permissions. Using default values.", e);
         return defaultSettings;

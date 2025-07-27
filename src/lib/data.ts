@@ -61,7 +61,7 @@ export async function getAdminPageData(): Promise<{ deals: Deal[], categories: s
     
     const [dealsSnapshot, categories] = await Promise.all([
         getDocs(dealsQuery),
-        getCategories() // Use getCategories to handle seeding logic
+        getCategories()
     ]);
     
     let deals = dealsSnapshot.docs.map(doc => ({
@@ -71,8 +71,7 @@ export async function getAdminPageData(): Promise<{ deals: Deal[], categories: s
         expireAt: (doc.data().expireAt as Timestamp).toDate().toISOString(),
     } as Deal));
     
-    // Seed one deal if none exist
-    if (dealsSnapshot.empty) {
+    if (dealsSnapshot.empty && categories.length > 0) {
         const demoDeal = {
             title: "Demo Product: Smart Home Hub",
             description: "A central hub to connect and control all your smart home devices. Supports voice commands and is compatible with major brands.",
@@ -99,7 +98,7 @@ export async function getCategories(): Promise<string[]> {
     const initialCategories = ["Mobile", "Electronics", "TV", "Fashion", "Appliances", "Books"];
     const batch = writeBatch(db);
     initialCategories.forEach(cat => {
-      const docRef = doc(categoriesCollection); // Generate new doc with unique ID
+      const docRef = doc(categoriesCollection); 
       batch.set(docRef, { name: cat });
     });
     await batch.commit();
@@ -107,7 +106,7 @@ export async function getCategories(): Promise<string[]> {
   }
   
   const categories = querySnapshot.docs.map(doc => doc.data().name as string);
-  return Array.from(new Set(categories)); // Deduplicate
+  return Array.from(new Set(categories));
 }
 
 export async function addCategoryToDb(categoryName: string): Promise<string> {
@@ -116,7 +115,7 @@ export async function addCategoryToDb(categoryName: string): Promise<string> {
 
     return await runTransaction(db, async (transaction) => {
         const categoriesRef = collection(db, 'categories');
-        const q = query(categoriesRef, where("name", ">=", "")); // A trick to query all for case-insensitive check
+        const q = query(categoriesRef, where("name", ">=", ""));
         
         const snapshot = await getDocs(q);
 

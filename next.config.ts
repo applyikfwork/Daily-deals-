@@ -16,9 +16,17 @@ const nextConfig: NextConfig = {
         port: '',
         pathname: '/**',
       },
+      {
+        protocol: 'https',
+        hostname: 'm.media-amazon.com',
+        port: '',
+        pathname: '/**',
+      }
     ],
   },
-  serverComponentsExternalPackages: ['@swc/helpers'],
+  experimental: {
+    serverComponentsExternalPackages: ['@swc/helpers'],
+  },
 };
 
 export default nextConfig;

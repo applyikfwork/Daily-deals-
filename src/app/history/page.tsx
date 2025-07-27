@@ -5,7 +5,7 @@ import DealList from '@/components/deal-list';
 import { Suspense } from 'react';
 import type { Deal } from '@/lib/types';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { AlertTriangle } from 'lucide-react';
+import { AlertTriangle, CalendarDays } from 'lucide-react';
 import { format } from 'date-fns';
 
 type HistoryPageProps = {
@@ -33,7 +33,6 @@ async function DealsHistorySection({ query, category }: { query: string; categor
     );
   }
   
-  // Group deals by date
   const groupedDeals = deals.reduce((acc, deal) => {
     const date = format(new Date(deal.createdAt), 'yyyy-MM-dd');
     if (!acc[date]) {
@@ -47,12 +46,15 @@ async function DealsHistorySection({ query, category }: { query: string; categor
 
 
   return (
-    <div className="container mx-auto px-4 py-8">
-        <div className="flex flex-col items-center text-center mb-8">
-             <h1 className="text-4xl font-bold tracking-tight">Deal History</h1>
-             <p className="mt-2 text-lg text-muted-foreground">
-                Browse deals from the last 14 days.
-            </p>
+    <div className="container mx-auto px-4 py-12">
+        <div className="relative text-center mb-12">
+             <div className="absolute inset-0 bg-gradient-to-r from-primary/10 to-accent/10 rounded-2xl -rotate-1"></div>
+             <div className="relative bg-background/80 backdrop-blur-sm rounded-2xl py-12 px-6">
+                <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight">Deal History</h1>
+                 <p className="mt-4 text-lg text-muted-foreground max-w-2xl mx-auto">
+                    Explore our archive of amazing deals from the last 14 days.
+                </p>
+             </div>
         </div>
 
       <DealFilters categories={categories} />
@@ -61,17 +63,23 @@ async function DealsHistorySection({ query, category }: { query: string; categor
          <div className="space-y-12">
             {sortedDates.map(date => (
                 <section key={date}>
-                    <h2 className="text-2xl font-bold mb-6 pb-2 border-b">
-                        {format(new Date(date), "EEEE, MMMM do, yyyy")}
-                    </h2>
+                    <div className="relative mb-8">
+                        <div className="absolute left-0 top-1/2 -translate-y-1/2 w-full h-px bg-border"></div>
+                        <div className="relative flex justify-center">
+                            <h2 className="bg-background px-4 text-lg font-semibold text-muted-foreground flex items-center gap-2">
+                                <CalendarDays className="h-5 w-5" />
+                                {format(new Date(date), "EEEE, MMMM do, yyyy")}
+                            </h2>
+                        </div>
+                    </div>
                     <DealList deals={groupedDeals[date]} />
                 </section>
             ))}
          </div>
       ): (
-        <div className="text-center py-16 text-muted-foreground">
+        <div className="text-center py-24">
             <h3 className="text-2xl font-semibold">No Past Deals Found</h3>
-            <p>Try adjusting your search or filters.</p>
+            <p className="text-muted-foreground mt-2">There are no deals in the archive for your current search or filter selection.</p>
         </div>
       )}
     </div>
@@ -85,10 +93,10 @@ export default function HistoryPage({ searchParams }: HistoryPageProps) {
 
   return (
       <Suspense fallback={
-           <div className="container mx-auto px-4 py-8">
-            <div className="flex flex-col items-center text-center mb-8">
-                 <div className="h-10 bg-muted rounded-md w-1/2 mb-2 animate-pulse"></div>
-                 <div className="h-6 bg-muted rounded-md w-2/3 animate-pulse"></div>
+           <div className="container mx-auto px-4 py-12">
+            <div className="flex flex-col items-center text-center mb-12">
+                 <div className="h-16 bg-muted rounded-2xl w-full max-w-2xl mb-2 animate-pulse"></div>
+                 <div className="h-6 bg-muted rounded-md w-2/3 max-w-lg animate-pulse"></div>
             </div>
              <div className="mb-8 flex flex-col sm:flex-row gap-4">
               <div className="h-10 bg-muted rounded-md w-full animate-pulse"></div>

@@ -29,9 +29,6 @@ export default async function Footer() {
                 <li>
                   <Link href="/history" className="text-sm hover:text-primary transition-colors">Deal History</Link>
                 </li>
-                <li>
-                  <Link href="/admin" className="text-sm hover:text-primary transition-colors">Admin</Link>
-                </li>
               </ul>
             </div>
             <div>

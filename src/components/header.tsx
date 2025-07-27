@@ -1,12 +1,13 @@
+
 'use client';
 
 import Link from 'next/link';
-import { Package2, UserCog, LogIn, LogOut } from 'lucide-react';
+import { Package2, UserCog, LogIn, LogOut, UserPlus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/use-auth';
 
 export default function Header() {
-  const { user, signIn, signOut: firebaseSignOut } = useAuth();
+  const { user, signOut: firebaseSignOut } = useAuth();
 
   const handleSignOut = async () => {
     await firebaseSignOut();
@@ -35,10 +36,20 @@ export default function Header() {
                   Sign Out
                 </Button>
             ) : (
-                <Button variant="ghost" onClick={signIn}>
-                    <LogIn className="mr-2 h-4 w-4" />
-                    Sign In
+              <>
+                <Button variant="ghost" asChild>
+                    <Link href="/signin">
+                      <LogIn className="mr-2 h-4 w-4" />
+                      Sign In
+                    </Link>
                 </Button>
+                 <Button asChild>
+                    <Link href="/signup">
+                      <UserPlus className="mr-2 h-4 w-4" />
+                      Sign Up
+                    </Link>
+                </Button>
+              </>
             )}
           </nav>
         </div>

@@ -21,29 +21,28 @@ export default function ProtectedAdminPage() {
 
   useEffect(() => {
     if (loading) {
-      return; // Wait until authentication status is resolved
+      return; 
     }
 
     const authorized = user?.email === ADMIN_EMAIL;
     setIsAuthorized(authorized);
 
-    async function loadAdminData() {
-      if (authorized) {
-        try {
-          const { deals, categories } = await getAdminPageData();
+    if (authorized) {
+      setDataLoading(true);
+      getAdminPageData()
+        .then(({ deals, categories }) => {
           setDeals(deals);
           setCategories(categories);
-        } catch (error) {
+        })
+        .catch(error => {
           console.error("Failed to load admin data", error);
-        } finally {
+        })
+        .finally(() => {
           setDataLoading(false);
-        }
-      } else {
-        setDataLoading(false);
-      }
+        });
+    } else {
+      setDataLoading(false);
     }
-    
-    loadAdminData();
   }, [user, loading]);
 
   if (loading || isAuthorized === null) {
@@ -96,7 +95,7 @@ export default function ProtectedAdminPage() {
         </div>
         <div>
            <h2 className="text-2xl font-bold mb-4">Category Management</h2>
-           <CategoryManager initialCategories={categories} />
+           <CategoryManager categories={categories} />
         </div>
       </div>
     </div>

@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useTransition, useEffect } from 'react';
+import { useTransition } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -22,18 +22,12 @@ const categorySchema = z.object({
 type CategoryFormValues = z.infer<typeof categorySchema>;
 
 type CategoryManagerProps = {
-  initialCategories: string[];
+  categories: string[];
 }
 
-export function CategoryManager({ initialCategories }: CategoryManagerProps) {
+export function CategoryManager({ categories }: CategoryManagerProps) {
   const { toast } = useToast();
   const [isPending, startTransition] = useTransition();
-  const [categories, setCategories] = useState(initialCategories);
-
-  useEffect(() => {
-    // Keep local state in sync with initial props
-    setCategories(initialCategories);
-  }, [initialCategories]);
 
   const form = useForm<CategoryFormValues>({
     resolver: zodResolver(categorySchema),
@@ -45,14 +39,6 @@ export function CategoryManager({ initialCategories }: CategoryManagerProps) {
       const result = await addCategoryAction(data);
       if (result.success) {
         toast({ title: 'Success!', description: 'New category has been added.' });
-        // Prevent adding duplicates to the local state with a case-insensitive check
-        setCategories(prev => {
-          const newCategory = data.name.trim();
-          if (prev.some(cat => cat.toLowerCase() === newCategory.toLowerCase())) {
-            return prev;
-          }
-          return [...prev, newCategory].sort();
-        });
         form.reset();
       } else {
         toast({

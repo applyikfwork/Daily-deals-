@@ -4,12 +4,57 @@ import { cn } from '@/lib/utils';
 import { Toaster } from '@/components/ui/toaster';
 import Header from '@/components/header';
 import Footer from '@/components/footer';
+import { Inter } from 'next/font/google';
+
+const inter = Inter({
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-inter',
+});
 
 export const metadata: Metadata = {
-  title: 'Deal Finder',
-  description: 'Find the best deals on the web.',
+  title: {
+    default: 'Deal Finder - Your Source for the Hottest Online Deals',
+    template: '%s | Deal Finder',
+  },
+  description: 'Find the best daily deals on electronics, fashion, home appliances, and more. Your one-stop destination for the hottest discounts on the web.',
+  keywords: ['deals', 'discounts', 'offers', 'tech deals', 'fashion discounts', 'daily deals'],
+  openGraph: {
+    title: 'Deal Finder - Your Source for the Hottest Online Deals',
+    description: 'Find the best daily deals on electronics, fashion, home appliances, and more.',
+    url: 'https://your-website.com', // Replace with your actual domain
+    siteName: 'Deal Finder',
+    images: [
+      {
+        url: 'https://your-website.com/og-image.png', // Replace with a link to a great OG image
+        width: 1200,
+        height: 630,
+      },
+    ],
+    locale: 'en_US',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Deal Finder - Your Source for the Hottest Online Deals',
+    description: 'Find the best daily deals on electronics, fashion, home appliances, and more.',
+    // images: ['https://your-website.com/og-image.png'], // Replace with your OG image URL
+  },
   icons: {
     icon: '/icon.svg',
+    shortcut: '/favicon.ico',
+    apple: '/apple-touch-icon.png', // Add an apple touch icon for iOS devices
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
   },
 };
 
@@ -19,12 +64,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="h-full">
-      <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
-      </head>
+    <html lang="en" className={`${inter.variable} h-full`}>
+      <head />
       <body className={cn('font-body antialiased min-h-screen flex flex-col')}>
           <Header />
           <main className="flex-grow">{children}</main>

@@ -55,16 +55,36 @@ export async function getDeals(filters: { query?: string, category?: string } = 
 }
 
 
-export async function getAllDealsForAdmin(): Promise<Deal[]> {
-  const q = query(dealsCollection, orderBy('createdAt', 'desc'));
-  const querySnapshot = await getDocs(q);
-  
-  return querySnapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data(),
-      createdAt: (doc.data().createdAt as Timestamp).toDate().toISOString(),
-      expireAt: (doc.data().expireAt as Timestamp).toDate().toISOString(),
-  } as Deal));
+export async function getAdminPageData(): Promise<{ deals: Deal[], categories: string[] }> {
+    const dealsQuery = query(dealsCollection, orderBy('createdAt', 'desc'));
+    const categoriesQuery = query(categoriesCollection, orderBy('name'));
+
+    const [dealsSnapshot, categoriesSnapshot] = await Promise.all([
+        getDocs(dealsQuery),
+        getDocs(categoriesQuery)
+    ]);
+    
+    const deals = dealsSnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data(),
+        createdAt: (doc.data().createdAt as Timestamp).toDate().toISOString(),
+        expireAt: (doc.data().expireAt as Timestamp).toDate().toISOString(),
+    } as Deal));
+
+    let categories = categoriesSnapshot.docs.map(doc => doc.data().name as string);
+
+    if (categories.length === 0) {
+        const initialCategories = ["Mobile", "Electronics", "TV", "Fashion", "Appliances", "Books"];
+        const batch = writeBatch(db);
+        initialCategories.forEach(cat => {
+            const docRef = doc(categoriesCollection);
+            batch.set(docRef, { name: cat });
+        });
+        await batch.commit();
+        categories = initialCategories.sort();
+    }
+
+    return { deals, categories };
 }
 
 export async function getCategories(): Promise<string[]> {
@@ -85,8 +105,10 @@ export async function getCategories(): Promise<string[]> {
 export async function addCategoryToDb(categoryName: string): Promise<string> {
   const trimmedName = categoryName.trim();
   
-  const allCategories = await getCategories();
-  if (allCategories.some(cat => cat.toLowerCase() === trimmedName.toLowerCase())) {
+  const q = query(categoriesCollection, where('name', '==', trimmedName));
+  const existing = await getDocs(q);
+
+  if (!existing.empty) {
      throw new Error(`Category "${trimmedName}" already exists.`);
   }
 

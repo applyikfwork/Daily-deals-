@@ -1,7 +1,7 @@
 
 'use client';
 
-import { getAllDealsForAdmin, getCategories } from '@/lib/data';
+import { getAdminPageData } from '@/lib/data';
 import { DealsTable } from '@/components/admin/deals-table';
 import { AddDealDialog } from '@/components/admin/add-deal-dialog';
 import { Suspense, useEffect, useState } from 'react';
@@ -24,12 +24,9 @@ export default function ProtectedAdminPage() {
     async function loadAdminData() {
       if (isAuthorized) {
         try {
-          const [dealsData, categoriesData] = await Promise.all([
-            getAllDealsForAdmin(),
-            getCategories(),
-          ]);
-          setDeals(dealsData);
-          setCategories(categoriesData);
+          const { deals, categories } = await getAdminPageData();
+          setDeals(deals);
+          setCategories(categories);
         } catch (error) {
           console.error("Failed to load admin data", error);
         } finally {
@@ -49,6 +46,7 @@ export default function ProtectedAdminPage() {
     return (
       <div className="container mx-auto px-4 py-8">
         <h1 className="text-3xl font-bold">Loading Admin Panel...</h1>
+        <p>Please wait while we fetch your data.</p>
       </div>
     );
   }
@@ -62,6 +60,14 @@ export default function ProtectedAdminPage() {
           You are not authorized to view this page. Please sign in with an admin account.
         </p>
       </div>
+    );
+  }
+  
+  if (!deals || !categories) {
+    return (
+        <div className="container mx-auto px-4 py-8">
+            <h1 className="text-3xl font-bold">Loading data...</h1>
+        </div>
     );
   }
 

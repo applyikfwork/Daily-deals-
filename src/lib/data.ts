@@ -15,7 +15,7 @@ import {
   writeBatch,
   runTransaction,
 } from 'firebase/firestore';
-import { subDays } from 'date-fns';
+import { subDays, addDays } from 'date-fns';
 
 const dealsCollection = collection(db, 'deals');
 const categoriesCollection = collection(db, 'categories');
@@ -65,7 +65,7 @@ export async function getAdminPageData(): Promise<{ deals: Deal[], categories: s
         getDocs(categoriesQuery)
     ]);
     
-    const deals = dealsSnapshot.docs.map(doc => ({
+    let deals = dealsSnapshot.docs.map(doc => ({
         id: doc.id,
         ...doc.data(),
         createdAt: (doc.data().createdAt as Timestamp).toDate().toISOString(),
@@ -74,7 +74,8 @@ export async function getAdminPageData(): Promise<{ deals: Deal[], categories: s
 
     let categories = categoriesSnapshot.docs.map(doc => doc.data().name as string);
 
-    if (categories.length === 0) {
+    // Seed initial categories if none exist
+    if (categoriesSnapshot.empty) {
         const initialCategories = ["Mobile", "Electronics", "TV", "Fashion", "Appliances", "Books"];
         const batch = writeBatch(db);
         initialCategories.forEach(cat => {
@@ -84,6 +85,24 @@ export async function getAdminPageData(): Promise<{ deals: Deal[], categories: s
         await batch.commit();
         categories = initialCategories.sort();
     }
+    
+    // Seed one deal if none exist
+    if (dealsSnapshot.empty) {
+        const demoDeal = {
+            title: "Demo Product: Smart Home Hub",
+            description: "A central hub to connect and control all your smart home devices. Supports voice commands and is compatible with major brands.",
+            price: 4999,
+            originalPrice: 7999,
+            imageUrl: "https://placehold.co/600x400.png",
+            link: "https://example.com/deal/smart-hub",
+            category: "Electronics",
+            expireAt: addDays(new Date(), 7).toISOString(),
+            isHotDeal: true,
+        };
+        const newDeal = await addDealToDb(demoDeal);
+        deals.push(newDeal);
+    }
+
 
     return { deals, categories };
 }
@@ -104,23 +123,26 @@ export async function getCategories(): Promise<string[]> {
 }
 
 export async function addCategoryToDb(categoryName: string): Promise<string> {
-  const trimmedName = categoryName.trim();
-  
-  return await runTransaction(db, async (transaction) => {
-    const categoriesRef = collection(db, 'categories');
-    const q = query(categoriesRef, where("name", "==", trimmedName));
-    
-    const snapshot = await getDocs(q);
+    const trimmedName = categoryName.trim();
+    const normalizedName = trimmedName.toLowerCase();
 
-    if (!snapshot.empty) {
-      throw new Error(`Category "${trimmedName}" already exists.`);
-    }
+    return await runTransaction(db, async (transaction) => {
+        const categoriesRef = collection(db, 'categories');
+        const q = query(categoriesRef, where("name", ">=", "")); // A trick to query all for case-insensitive check
+        
+        const snapshot = await getDocs(q);
 
-    const newCategoryRef = doc(categoriesRef);
-    transaction.set(newCategoryRef, { name: trimmedName });
+        const existingCategory = snapshot.docs.find(doc => doc.data().name.toLowerCase() === normalizedName);
 
-    return trimmedName;
-  });
+        if (existingCategory) {
+            throw new Error(`Category "${trimmedName}" already exists.`);
+        }
+
+        const newCategoryRef = doc(categoriesRef);
+        transaction.set(newCategoryRef, { name: trimmedName });
+
+        return trimmedName;
+    });
 }
 
 

@@ -203,7 +203,7 @@ export async function getDeals(filters: { query?: string, category?: string, tim
       expireAt: (doc.data().expireAt as Timestamp).toDate().toISOString(),
     } as Deal));
   
-    // Filter by date range first
+    // Filter by date range first (within last 15 days)
     let dealsInDateRange = allDeals.filter(deal => new Date(deal.createdAt) >= fifteenDaysAgo);
   
     let deals: Deal[];
@@ -212,7 +212,7 @@ export async function getDeals(filters: { query?: string, category?: string, tim
         deals = dealsInDateRange.filter(deal => new Date(deal.createdAt) >= todayStart);
     } else if (filters.timeScope === 'history') {
         deals = dealsInDateRange.filter(deal => new Date(deal.createdAt) < todayStart);
-    } else {
+    } else { // 'all' or undefined
         deals = dealsInDateRange;
     }
     
@@ -231,6 +231,7 @@ export async function getDeals(filters: { query?: string, category?: string, tim
                 const fortyEightHoursFromNow = addHours(now, 48);
                 deals = deals.filter(deal => {
                     const expiryDate = new Date(deal.expireAt);
+                    // Only show deals that are not expired and end soon
                     return expiryDate > now && expiryDate <= fortyEightHoursFromNow;
                 });
                 break;

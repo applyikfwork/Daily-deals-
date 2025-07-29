@@ -16,7 +16,7 @@ import {
   getDoc,
   setDoc,
 } from 'firebase/firestore';
-import { subDays, startOfToday, startOfDay, addHours } from 'date-fns';
+import { subDays, startOfToday, startOfDay, addHours, addDays } from 'date-fns';
 
 const dealsCollection = collection(db, 'deals');
 const categoriesCollection = collection(db, 'categories');
@@ -27,7 +27,7 @@ async function seedInitialData() {
         const categoriesSnapshot = await getDocs(query(categoriesCollection, where('name', '==', 'Electronics')));
         if (categoriesSnapshot.empty) {
             console.log('Seeding initial categories...');
-            const initialCategories = ["Mobile", "Electronics", "TV", "Fashion", "Appliances", "Books"];
+            const initialCategories = ["Mobile", "Electronics", "TV", "Fashion", "Appliances", "Books", "Home"];
             const batch = writeBatch(db);
             initialCategories.forEach(cat => {
                 const docRef = doc(categoriesCollection);
@@ -40,17 +40,76 @@ async function seedInitialData() {
         if (dealsSnapshot.empty) {
             console.log('Seeding initial deals...');
             const demoDeals = [
+                // Hot Deals
                 {
-                    title: "Smart Home Hub",
+                    title: "Smart Home Hub Pro",
                     description: "A central hub to connect and control all your smart home devices. Supports voice commands and is compatible with major brands.",
                     price: 4999,
                     originalPrice: 7999,
                     imageUrl: "https://res.cloudinary.com/dodzjp0gr/image/upload/v1722357879/smart-home-hub_e5wsle.jpg",
-                    link: "https://example.com/deal/smart-hub",
+                    link: "https://example.com/deal/smart-hub-pro",
                     category: "Electronics",
-                    expireAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+                    expireAt: addDays(new Date(), 7).toISOString(),
                     isHotDeal: true,
                 },
+                {
+                    title: "Premium Mechanical Keyboard",
+                    description: "RGB backlit mechanical keyboard with customizable keys and a durable aluminum frame. Perfect for gaming and typing.",
+                    price: 6999,
+                    originalPrice: 9999,
+                    imageUrl: "https://res.cloudinary.com/dodzjp0gr/image/upload/v1722449767/keyboard_jw9ycn.jpg",
+                    link: "https://example.com/deal/mechanical-keyboard",
+                    category: "Electronics",
+                    expireAt: addDays(new Date(), 10).toISOString(),
+                    isHotDeal: true,
+                },
+                // Ends Soon Deals (expire in < 2 days)
+                {
+                    title: "Last Minute: Bluetooth Speaker",
+                    description: "Portable Bluetooth speaker with 12-hour battery life. Offer ends soon!",
+                    price: 1899,
+                    originalPrice: 3499,
+                    imageUrl: "https://res.cloudinary.com/dodzjp0gr/image/upload/v1722449767/speaker_q89hba.jpg",
+                    link: "https://example.com/deal/bt-speaker-ends-soon",
+                    category: "Electronics",
+                    expireAt: addHours(new Date(), 36).toISOString(), // Expires in 1.5 days
+                    isHotDeal: false,
+                },
+                {
+                    title: "Flash Sale: Digital Photo Frame",
+                    description: "Display your favorite memories on this 10-inch Wi-Fi digital photo frame. Sale ending very soon.",
+                    price: 3999,
+                    originalPrice: 6999,
+                    imageUrl: "https://res.cloudinary.com/dodzjp0gr/image/upload/v1722449767/photo-frame_yrmkda.jpg",
+                    link: "https://example.com/deal/digital-frame-flash-sale",
+                    category: "Home",
+                    expireAt: addHours(new Date(), 24).toISOString(), // Expires in 1 day
+                    isHotDeal: false,
+                },
+                 // Under ₹499 Deals
+                {
+                    title: "USB-C Fast Charging Cable",
+                    description: "Durable 6ft braided USB-C to USB-C cable for fast charging and data transfer.",
+                    price: 399,
+                    originalPrice: 999,
+                    imageUrl: "https://res.cloudinary.com/dodzjp0gr/image/upload/v1722449767/cable_v4vszl.jpg",
+                    link: "https://example.com/deal/usbc-cable-399",
+                    category: "Mobile",
+                    expireAt: addDays(new Date(), 20).toISOString(),
+                    isHotDeal: false,
+                },
+                {
+                    title: "Compact Travel Umbrella",
+                    description: "Lightweight and windproof travel umbrella. A must-have for daily commutes.",
+                    price: 450,
+                    originalPrice: 1200,
+                    imageUrl: "https://res.cloudinary.com/dodzjp0gr/image/upload/v1722449768/umbrella_kqcjwr.jpg",
+                    link: "https://example.com/deal/umbrella-450",
+                    category: "Fashion",
+                    expireAt: addDays(new Date(), 30).toISOString(),
+                    isHotDeal: false,
+                },
+                // Top Tech Deals
                 {
                     title: "Wireless Bluetooth Earbuds",
                     description: "High-fidelity sound with noise cancellation. Up to 24 hours of battery life with the charging case. Perfect for workouts and calls.",
@@ -59,9 +118,21 @@ async function seedInitialData() {
                     imageUrl: "https://res.cloudinary.com/dodzjp0gr/image/upload/v1722357878/earbuds_xwef1n.jpg",
                     link: "https://example.com/deal/earbuds",
                     category: "Mobile",
-                    expireAt: new Date(Date.now() + 10 * 24 * 60 * 60 * 1000).toISOString(),
+                    expireAt: addDays(new Date(), 10).toISOString(),
                     isHotDeal: false,
                 },
+                {
+                    title: "Gaming Mouse with RGB",
+                    description: "High-precision gaming mouse with customizable RGB lighting and programmable buttons.",
+                    price: 1599,
+                    originalPrice: 2999,
+                    imageUrl: "https://res.cloudinary.com/dodzjp0gr/image/upload/v1722449767/mouse_s6gxxq.jpg",
+                    link: "https://example.com/deal/gaming-mouse",
+                    category: "Electronics",
+                    expireAt: addDays(new Date(), 12).toISOString(),
+                    isHotDeal: false,
+                },
+                // Original Deals
                 {
                     title: "Classic Leather Watch",
                     description: "A timeless analog watch with a genuine leather strap and stainless steel case. Water-resistant up to 50m.",
@@ -70,7 +141,7 @@ async function seedInitialData() {
                     imageUrl: "https://res.cloudinary.com/dodzjp0gr/image/upload/v1722357879/watch_x5diqq.jpg",
                     link: "https://example.com/deal/watch",
                     category: "Fashion",
-                    expireAt: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString(),
+                    expireAt: addDays(new Date(), 5).toISOString(),
                     isHotDeal: false,
                 }
             ];
@@ -99,8 +170,8 @@ async function seedInitialData() {
     }
 }
 
-// No longer call seedInitialData() automatically
-// seedInitialData();
+// Call seedInitialData to ensure data exists on first run
+seedInitialData();
 
 
 export async function getDeals(filters: { query?: string, category?: string, timeScope?: 'today' | 'history' | 'all', filter?: 'hot' | 'soon' | 'under499' | 'tech' } = {}): Promise<Deal[]> {

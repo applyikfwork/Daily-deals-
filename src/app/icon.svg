@@ -1,22 +1,8 @@
-<svg
-  xmlns="http://www.w3.org/2000/svg"
-  width="24"
-  height="24"
-  viewBox="0 0 24 24"
-  fill="none"
-  stroke="currentColor"
-  stroke-width="2"
-  stroke-linecap="round"
-  stroke-linejoin="round"
->
-  <path d="M21 10V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v2" />
-  <path d="M3 14v-4" />
-  <path d="M21 14v-4" />
-  <path d="m3 14 7 4 7-4" />
-  <path d="M12 22v-8" />
-  <style>
-    path {
-      stroke: hsl(220 85% 55%);
-    }
-  </style>
+<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="hsl(220 85% 55%)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M21 10V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v2"/>
+    <path d="m7 21 5-3 5 3"/>
+    <path d="M12 22V10"/>
+    <path d="M3.29 7 12 12l8.71-5"/>
+    <path d="M3 14V8"/>
+    <path d="M21 14V8"/>
 </svg>

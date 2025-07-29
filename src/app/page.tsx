@@ -6,10 +6,11 @@ import DealList from '@/components/deal-list';
 import { Suspense } from 'react';
 import type { Deal } from '@/lib/types';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { AlertTriangle, CalendarCheck, History } from 'lucide-react';
+import { AlertTriangle, CalendarCheck } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import QuickFilters from '@/components/quick-filters';
 import { isToday } from 'date-fns';
+import GroupedDealList from '@/components/grouped-deal-list';
 
 type HomeProps = {
   searchParams?: {
@@ -39,48 +40,39 @@ async function DealsSection({ query, category, filter }: { query: string; catego
 
   const todayDeals = deals.filter(deal => isToday(new Date(deal.createdAt)));
   const pastDeals = deals.filter(deal => !isToday(new Date(deal.createdAt)));
-  const showGroupedView = filter && filter !== 'soon';
+  
+  const showPastDeals = todayDeals.length === 0;
 
   return (
     <div className="space-y-8">
       <DealFilters categories={categories} />
       <QuickFilters />
       
-      {showGroupedView ? (
-        <div className='space-y-12'>
-            {todayDeals.length > 0 && (
-                <section>
-                    <div className="relative mb-6">
-                        <div className="absolute left-0 top-1/2 -translate-y-1/2 w-full h-px bg-border"></div>
-                        <div className="relative flex justify-center">
-                            <h2 className="bg-background px-4 text-lg font-semibold text-muted-foreground flex items-center gap-2">
-                                <CalendarCheck className="h-5 w-5" />
-                                Today's Deals
-                            </h2>
-                        </div>
-                    </div>
-                    <DealList deals={todayDeals} />
-                </section>
-            )}
-            {pastDeals.length > 0 && (
-                <section>
-                    <div className="relative mb-6">
-                        <div className="absolute left-0 top-1/2 -translate-y-1/2 w-full h-px bg-border"></div>
-                        <div className="relative flex justify-center">
-                            <h2 className="bg-background px-4 text-lg font-semibold text-muted-foreground flex items-center gap-2">
-                                <History className="h-5 w-5" />
-                                Past Deals
-                            </h2>
-                        </div>
-                    </div>
-                    <DealList deals={pastDeals} />
-                </section>
-            )}
-            {deals.length === 0 && <DealList deals={[]} />}
-        </div>
-      ) : (
-        <DealList deals={deals} />
-      )}
+      <div className='space-y-12'>
+          {todayDeals.length > 0 && (
+              <section>
+                  <div className="relative mb-6">
+                      <div className="absolute left-0 top-1/2 -translate-y-1/2 w-full h-px bg-border"></div>
+                      <div className="relative flex justify-center">
+                          <h2 className="bg-background px-4 text-lg font-semibold text-muted-foreground flex items-center gap-2">
+                              <CalendarCheck className="h-5 w-5" />
+                              Today's Deals
+                          </h2>
+                      </div>
+                  </div>
+                  <DealList deals={todayDeals} />
+              </section>
+          )}
+
+          {showPastDeals && (
+            pastDeals.length > 0 ? (
+              <GroupedDealList deals={pastDeals} />
+            ) : (
+              // This shows the "No Deals Found" message if both today and past are empty
+              <DealList deals={[]} />
+            )
+          )}
+      </div>
     </div>
   );
 }

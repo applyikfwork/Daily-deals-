@@ -42,8 +42,8 @@ export const metadata: Metadata = {
     // images: ['https://your-website.com/og-image.png'], // Replace with your OG image URL
   },
   icons: {
-    icon: '/favicon.png',
-    shortcut: '/favicon.png',
+    icon: '/icon.svg',
+    shortcut: '/icon.svg',
     apple: '/apple-touch-icon.png',
   },
   robots: {

@@ -16,7 +16,7 @@ import {
   getDoc,
   setDoc,
 } from 'firebase/firestore';
-import { subDays, startOfToday, startOfDay } from 'date-fns';
+import { subDays, startOfToday, startOfDay, addHours } from 'date-fns';
 
 const dealsCollection = collection(db, 'deals');
 const categoriesCollection = collection(db, 'categories');
@@ -103,17 +103,13 @@ async function seedInitialData() {
 // seedInitialData();
 
 
-export async function getDeals(filters: { query?: string, category?: string, timeScope?: 'today' | 'history' | 'all' } = {}): Promise<Deal[]> {
+export async function getDeals(filters: { query?: string, category?: string, timeScope?: 'today' | 'history' | 'all', filter?: 'hot' | 'soon' | 'under499' | 'tech' } = {}): Promise<Deal[]> {
   try {
     const now = new Date();
     const todayStart = startOfToday();
     const fifteenDaysAgo = startOfDay(subDays(now, 15));
 
     let q = query(dealsCollection, orderBy('createdAt', 'desc'));
-
-    if (filters.category && filters.category !== 'all') {
-      q = query(q, where('category', '==', filters.category));
-    }
     
     const querySnapshot = await getDocs(q);
 
@@ -135,6 +131,33 @@ export async function getDeals(filters: { query?: string, category?: string, tim
         deals = dealsInDateRange.filter(deal => new Date(deal.createdAt) < todayStart);
     } else {
         deals = dealsInDateRange;
+    }
+    
+     // Apply category filter if not a special filter that defines its own categories
+    if (filters.category && filters.category !== 'all' && filters.filter !== 'tech') {
+       deals = deals.filter(deal => deal.category === filters.category);
+    }
+
+    // Apply special filters
+    if (filters.filter) {
+        switch (filters.filter) {
+            case 'hot':
+                deals = deals.filter(deal => deal.isHotDeal);
+                break;
+            case 'soon':
+                const fortyEightHoursFromNow = addHours(now, 48);
+                deals = deals.filter(deal => {
+                    const expiryDate = new Date(deal.expireAt);
+                    return expiryDate > now && expiryDate <= fortyEightHoursFromNow;
+                });
+                break;
+            case 'under499':
+                deals = deals.filter(deal => deal.price < 499);
+                break;
+            case 'tech':
+                deals = deals.filter(deal => ['Electronics', 'Mobile'].includes(deal.category));
+                break;
+        }
     }
     
     // Apply search query filtering

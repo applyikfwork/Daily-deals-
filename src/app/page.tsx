@@ -8,16 +8,18 @@ import type { Deal } from '@/lib/types';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { AlertTriangle } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
+import QuickFilters from '@/components/quick-filters';
 
 type HomeProps = {
   searchParams?: {
     query?: string;
     category?: string;
+    filter?: 'hot' | 'soon' | 'under499' | 'tech';
   };
 };
 
-async function DealsSection({ query, category }: { query: string; category: string }) {
-  const deals = await getDeals({ query, category, timeScope: 'today' });
+async function DealsSection({ query, category, filter }: { query: string; category: string; filter?: 'hot' | 'soon' | 'under499' | 'tech' }) {
+  const deals = await getDeals({ query, category, timeScope: 'today', filter });
   const categories = await getCategories();
   
   if (!deals || !categories) {
@@ -37,6 +39,7 @@ async function DealsSection({ query, category }: { query: string; category: stri
   return (
     <div className="space-y-8">
       <DealFilters categories={categories} />
+      <QuickFilters />
       <DealList deals={deals} />
     </div>
   );
@@ -58,6 +61,7 @@ async function TopDealSection() {
 export default function Home({ searchParams }: HomeProps) {
   const query = searchParams?.query || '';
   const category = searchParams?.category || 'all';
+  const filter = searchParams?.filter;
 
   return (
     <div className="container mx-auto px-4 py-8 space-y-12">
@@ -75,10 +79,16 @@ export default function Home({ searchParams }: HomeProps) {
                 <Skeleton className="h-10 w-full flex-grow" />
                 <Skeleton className="h-10 w-full sm:w-[200px]" />
               </div>
+               <div className="flex items-center gap-2">
+                <Skeleton className="h-9 w-24 rounded-full" />
+                <Skeleton className="h-9 w-28 rounded-full" />
+                <Skeleton className="h-9 w-32 rounded-full" />
+                <Skeleton className="h-9 w-24 rounded-full" />
+              </div>
               <DealList.Skeleton />
             </div>
         }>
-          <DealsSection query={query} category={category} />
+          <DealsSection query={query} category={category} filter={filter} />
         </Suspense>
       </section>
     </div>

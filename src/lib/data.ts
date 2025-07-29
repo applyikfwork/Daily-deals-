@@ -132,6 +132,18 @@ async function seedInitialData() {
                     expireAt: addDays(new Date(), 12).toISOString(),
                     isHotDeal: false,
                 },
+                // Additional Demo from User Request
+                {
+                    title: "Demo Product",
+                    description: "This is a demo product added based on user request.",
+                    price: 1000,
+                    originalPrice: 3000,
+                    imageUrl: "https://placehold.co/400x250.png",
+                    link: "https://example.com/deal/demo-product",
+                    category: "Electronics",
+                    expireAt: addDays(new Date(), 3).toISOString(),
+                    isHotDeal: true,
+                },
                 // Original Deals
                 {
                     title: "Classic Leather Watch",

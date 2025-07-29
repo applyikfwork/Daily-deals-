@@ -41,11 +41,6 @@ export const metadata: Metadata = {
     description: 'Find the best daily deals on electronics, fashion, home appliances, and more.',
     // images: ['https://your-website.com/og-image.png'], // Replace with your OG image URL
   },
-  icons: {
-    icon: '/favicon.png',
-    shortcut: '/favicon.png',
-    apple: '/favicon.png',
-  },
   robots: {
     index: true,
     follow: true,
